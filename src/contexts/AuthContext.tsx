@@ -1,29 +1,27 @@
+// src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
-import type { User as SupabaseUser } from "@supabase/supabase-js";
-import type { User } from "../types/User";
+import { toast } from "react-hot-toast";
+
+export type User = {
+  id: string;
+  email: string;
+  name: string;
+  role: "admin" | "user";
+  created_at: string;
+};
 
 type AuthContextType = {
   user: User | null;
+  isAdmin: boolean;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string) => Promise<void>;
+  signIn: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Map Supabase User to app's User type
-const mapSupabaseUser = (supabaseUser: SupabaseUser | null): User | null => {
-  if (!supabaseUser) return null;
-
-  return {
-    id: supabaseUser.id,
-    email: supabaseUser.email ?? "",
-    name: supabaseUser.user_metadata?.name ?? "",
-    created_at: supabaseUser.created_at,
-  };
-};
+const LOCAL_STORAGE_KEY = "mock_user";
+const ADMIN_EMAIL = "admin@example.com";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -31,53 +29,67 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // ✅ derive admin status from user
+  const isAdmin = user?.role === "admin";
+
   useEffect(() => {
-    // Initial session check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(mapSupabaseUser(session?.user ?? null));
-      setLoading(false);
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(mapSupabaseUser(session?.user ?? null));
-    });
-
-    return () => subscription.unsubscribe();
+    const storedUser = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
   }, []);
 
-  const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) throw error;
+  const signUp = async (email: string) => {
+    const newUser: User = {
+      id: crypto.randomUUID(),
+      email,
+      name: email.split("@")[0],
+      role: email === ADMIN_EMAIL ? "admin" : "user",
+      created_at: new Date().toISOString(),
+    };
+
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newUser));
+    setUser(newUser);
+    toast.success("Account created!");
   };
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) throw error;
+  const signIn = async (email: string) => {
+    const storedUser = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (!storedUser) throw new Error("No user found. Please sign up.");
+
+    const parsedUser: User = JSON.parse(storedUser);
+    if (parsedUser.email !== email) throw new Error("Invalid email");
+
+    setUser(parsedUser);
+    toast.success("Signed in!");
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    setUser(null);
+    toast.success("Signed out!");
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAdmin, // ✅ THIS WAS MISSING
+        loading,
+        signUp,
+        signIn,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Custom hook for consuming AuthContext
+// Hook
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };

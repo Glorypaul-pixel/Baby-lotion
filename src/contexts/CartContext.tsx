@@ -1,129 +1,104 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
-import type { CartItem } from '../lib/supabase';
-import type { Product } from "../types/Product";
+// src/contexts/CartContext.tsx
+import React, { createContext, useContext, useState, useMemo } from "react";
 
-import { useAuth } from './AuthContext';
+export type Product = {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  image_url: string;
+  stock: number;
+  is_featured: boolean;
+  description: string;
+  created_at: string;
+};
 
-
+export type CartItem = {
+  id: string;
+  product: Product;
+  quantity: number;
+};
 
 type CartContextType = {
-  cart: (CartItem & { products: Product })[];
-  loading: boolean;
-  addToCart: (productId: string, quantity?: number) => Promise<void>;
-  removeFromCart: (cartItemId: string) => Promise<void>;
-  updateQuantity: (cartItemId: string, quantity: number) => Promise<void>;
-  clearCart: () => Promise<void>;
+  cart: CartItem[];
   cartTotal: number;
-  cartCount: number;
+  addToCart: (productId: string, quantity?: number) => void;
+  removeFromCart: (cartItemId: string) => void;
+  updateQuantity: (cartItemId: string, quantity: number) => void;
+  clearCart: () => void;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+// ----------------------
+// MOCK DATA
+// ----------------------
+const mockCart: CartItem[] = [
+  {
+    id: "1",
+    product: {
+      id: "p1",
+      name: "Baby Lotion",
+      price: 12.99,
+      category: "baby_lotion",
+      image_url: "https://placehold.co/100x100?text=Lotion",
+      stock: 10,
+      is_featured: true,
+      description: "Gentle baby lotion",
+      created_at: "2026-01-26",
+    },
+    quantity: 2,
+  },
+  {
+    id: "2",
+    product: {
+      id: "p2",
+      name: "Soft Soap",
+      price: 5.5,
+      category: "soap",
+      image_url: "https://placehold.co/100x100?text=Soap",
+      stock: 0,
+      is_featured: false,
+      description: "Mild soap",
+      created_at: "2026-01-26",
+    },
+    quantity: 1,
+  },
+];
+
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
-  const [cart, setCart] = useState<(CartItem & { products: Product })[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [cart, setCart] = useState<CartItem[]>(mockCart);
 
-  const fetchCart = async () => {
-    if (!user) {
-      setCart([]);
-      return;
-    }
+  const cartTotal = useMemo(() => cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0), [cart]);
 
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('cart_items')
-      .select('*, products(*)')
-      .eq('user_id', user.id);
-
-    if (!error && data) {
-      setCart(data as (CartItem & { products: Product })[]);
-    }
-    setLoading(false);
+  const addToCart = (productId: string, quantity: number = 1) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.product.id === productId);
+      if (existing) {
+        return prev.map(item =>
+          item.product.id === productId ? { ...item, quantity: item.quantity + quantity } : item
+        );
+      }
+      return prev;
+    });
   };
 
-  useEffect(() => {
-    fetchCart();
-  }, [user]);
+  const removeFromCart = (cartItemId: string) => setCart(prev => prev.filter(item => item.id !== cartItemId));
 
-  const addToCart = async (productId: string, quantity: number = 1) => {
-    if (!user) throw new Error('Must be logged in to add to cart');
+  const updateQuantity = (cartItemId: string, quantity: number) =>
+    setCart(prev => prev.map(item => (item.id === cartItemId ? { ...item, quantity } : item)));
 
-    const existingItem = cart.find(item => item.product_id === productId);
-
-    if (existingItem) {
-      await updateQuantity(existingItem.id, existingItem.quantity + quantity);
-    } else {
-      const { error } = await supabase
-        .from('cart_items')
-        .insert({ user_id: user.id, product_id: productId, quantity });
-
-      if (error) throw error;
-      await fetchCart();
-    }
-  };
-
-  const removeFromCart = async (cartItemId: string) => {
-    const { error } = await supabase
-      .from('cart_items')
-      .delete()
-      .eq('id', cartItemId);
-
-    if (error) throw error;
-    await fetchCart();
-  };
-
-  const updateQuantity = async (cartItemId: string, quantity: number) => {
-    if (quantity <= 0) {
-      await removeFromCart(cartItemId);
-      return;
-    }
-
-    const { error } = await supabase
-      .from('cart_items')
-      .update({ quantity })
-      .eq('id', cartItemId);
-
-    if (error) throw error;
-    await fetchCart();
-  };
-
-  const clearCart = async () => {
-    if (!user) return;
-
-    const { error } = await supabase
-      .from('cart_items')
-      .delete()
-      .eq('user_id', user.id);
-
-    if (error) throw error;
-    setCart([]);
-  };
-
-  const cartTotal = cart.reduce((sum, item) => sum + (item.products?.price || 0) * item.quantity, 0);
-  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const clearCart = () => setCart([]);
 
   return (
-    <CartContext.Provider value={{
-      cart,
-      loading,
-      addToCart,
-      removeFromCart,
-      updateQuantity,
-      clearCart,
-      cartTotal,
-      cartCount
-    }}>
+    <CartContext.Provider value={{ cart, cartTotal, addToCart, removeFromCart, updateQuantity, clearCart }}>
       {children}
     </CartContext.Provider>
   );
 };
 
-export const useCart = () => {
+export const useCart = (): CartContextType => {
   const context = useContext(CartContext);
-  if (context === undefined) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
+  if (!context) throw new Error("useCart must be used within a CartProvider");
   return context;
 };

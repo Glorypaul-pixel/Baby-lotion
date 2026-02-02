@@ -1,15 +1,17 @@
 import React, { useState } from "react";
 import { Baby } from "lucide-react";
 import toast from "react-hot-toast";
+import { useAuth } from "../contexts/AuthContext";
 
 type AuthProps = {
   onNavigate: (page: string) => void;
 };
 
 export const Auth: React.FC<AuthProps> = ({ onNavigate }) => {
+  const { signUp, signIn } = useAuth(); // ✅ Use the context
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState(""); // can ignore for mock
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -19,15 +21,14 @@ export const Auth: React.FC<AuthProps> = ({ onNavigate }) => {
     setLoading(true);
 
     try {
-      // Simulated auth flow (replace with real backend later)
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       if (isSignUp) {
-        toast.success("Account created successfully! Please sign in.");
-        setIsSignUp(false);
+        await signUp(email); // ✅ Create user in context
+        toast.success("Account created successfully!");
+        setIsSignUp(false); // Switch to sign-in
       } else {
+        await signIn(email); // ✅ Sign in the user in context
         toast.success("Signed in successfully!");
-        onNavigate("home");
+        onNavigate("home"); // Redirect after login
       }
     } catch (err: unknown) {
       if (err instanceof Error) {

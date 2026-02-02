@@ -15,7 +15,7 @@ type FooterProps = {
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   return (
-    <footer className="bg-gradient-to-br from-peach-50 to-peach-100 dark:from-gray-900 dark:to-gray-800 border-t border-peach-200 dark:border-gray-700 transition-colors duration-300">
+    <footer className="bg-gradient-to-br  from-peach-50 to-peach-100 dark:from-gray-900 dark:to-gray-800 border-t border-peach-200 dark:border-gray-700 transition-colors duration-300 ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo + Description + Social */}

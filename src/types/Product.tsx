@@ -1,5 +1,3 @@
-// src/types/Product.ts
-
 export type Product = {
   id: string;
   name: string;
@@ -11,3 +9,4 @@ export type Product = {
   is_featured: boolean;
   created_at: string;
 };
+
