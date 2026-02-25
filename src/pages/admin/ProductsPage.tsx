@@ -1,114 +1,118 @@
-// src/pages/admin/ProductsPage.tsx
 import React, { useState } from "react";
-
-type Product = {
-  id: string;
-  name: string;
-  price: number;
-  stock: number;
-};
-
-const mockProducts: Product[] = [
-  { id: "1", name: "Product A", price: 50, stock: 10 },
-  { id: "2", name: "Product B", price: 75, stock: 5 },
-  { id: "3", name: "Product C", price: 120, stock: 0 },
-];
+import { useProducts, type Product } from "../../hooks/useProducts";
 
 export const ProductsPage: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>(mockProducts);
-  const [newProduct, setNewProduct] = useState({ name: "", price: 0, stock: 0 });
+  const { products, loading, error } = useProducts();
   const [editingId, setEditingId] = useState<string | null>(null);
-
-  // Add new product
-  const handleAdd = () => {
-    if (!newProduct.name || newProduct.price < 0 || newProduct.stock < 0) return;
-
-    const productToAdd: Product = {
-      id: Date.now().toString(),
-      ...newProduct,
-    };
-    setProducts([...products, productToAdd]);
-    setNewProduct({ name: "", price: 0, stock: 0 });
-  };
-
-  // Delete product
-  const handleDelete = (id: string) => {
-    setProducts(products.filter((p) => p.id !== id));
-  };
+  const [editForm, setEditForm] = useState({
+    name: "",
+    unit_price: "",
+    quantity: 0,
+  });
 
   // Start editing
   const startEdit = (product: Product) => {
     setEditingId(product.id);
-    setNewProduct({ name: product.name, price: product.price, stock: product.stock });
+    setEditForm({
+      name: product.name,
+      unit_price: product.unit_price,
+      quantity: product.quantity,
+    });
   };
 
-  // Save edit
-  const saveEdit = () => {
-    setProducts(
-      products.map((p) =>
-        p.id === editingId ? { ...p, ...newProduct } : p
-      )
-    );
+  const cancelEdit = () => {
     setEditingId(null);
-    setNewProduct({ name: "", price: 0, stock: 0 });
+    setEditForm({ name: "", unit_price: "", quantity: 0 });
   };
+
+  // NOTE: Add/Edit/Delete will need backend endpoints — ask the backend guy
+  // for POST /api/products/, PATCH /api/products/{id}/, DELETE /api/products/{id}/
+  const handleSave = () => {
+    console.log("TODO: PATCH /api/products/", editingId, editForm);
+    cancelEdit();
+  };
+
+  const handleDelete = (id: string) => {
+    console.log("TODO: DELETE /api/products/", id);
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {[...Array(5)].map((_, i) => (
+          <div
+            key={i}
+            className="h-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-red-500 py-8 text-center">
+        Failed to load products: {error}
+      </div>
+    );
+  }
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Products Management</h1>
 
-      {/* Add/Edit Form */}
-      <div className="mb-6 flex gap-2">
-        <input
-          type="text"
-          placeholder="Name"
-          value={newProduct.name}
-          onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-          className="border px-2 py-1 rounded"
-        />
-        <input
-          type="number"
-          placeholder="Price"
-          value={newProduct.price}
-          onChange={(e) =>
-            setNewProduct({ ...newProduct, price: Number(e.target.value) })
-          }
-          className="border px-2 py-1 rounded"
-        />
-        <input
-          type="number"
-          placeholder="Stock"
-          value={newProduct.stock}
-          onChange={(e) =>
-            setNewProduct({ ...newProduct, stock: Number(e.target.value) })
-          }
-          className="border px-2 py-1 rounded"
-        />
-        {editingId ? (
+      {/* Edit Form — only shown when editing */}
+      {editingId && (
+        <div className="mb-6 flex gap-2 items-center bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+          <input
+            type="text"
+            placeholder="Name"
+            value={editForm.name}
+            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+            className="border px-2 py-1 rounded"
+          />
+          <input
+            type="text"
+            placeholder="Price"
+            value={editForm.unit_price}
+            onChange={(e) =>
+              setEditForm({ ...editForm, unit_price: e.target.value })
+            }
+            className="border px-2 py-1 rounded w-28"
+          />
+          <input
+            type="number"
+            placeholder="Quantity"
+            value={editForm.quantity}
+            onChange={(e) =>
+              setEditForm({ ...editForm, quantity: Number(e.target.value) })
+            }
+            className="border px-2 py-1 rounded w-24"
+          />
           <button
-            onClick={saveEdit}
+            onClick={handleSave}
             className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
           >
             Save
           </button>
-        ) : (
           <button
-            onClick={handleAdd}
-            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+            onClick={cancelEdit}
+            className="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-500"
           >
-            Add
+            Cancel
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Products Table */}
       <table className="w-full table-auto border-collapse">
         <thead>
           <tr className="bg-gray-200 dark:bg-gray-800">
-            <th className="px-4 py-2">Name</th>
-            <th className="px-4 py-2">Price</th>
-            <th className="px-4 py-2">Stock</th>
-            <th className="px-4 py-2">Actions</th>
+            <th className="px-4 py-2 text-left">Name</th>
+            <th className="px-4 py-2 text-left">Tag</th>
+            <th className="px-4 py-2 text-left">Price</th>
+            <th className="px-4 py-2 text-left">Quantity</th>
+            <th className="px-4 py-2 text-left">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -118,8 +122,11 @@ export const ProductsPage: React.FC = () => {
               className="border-b border-gray-300 dark:border-gray-700"
             >
               <td className="px-4 py-2">{p.name}</td>
-              <td className="px-4 py-2">${p.price}</td>
-              <td className="px-4 py-2">{p.stock}</td>
+              <td className="px-4 py-2 capitalize">{p.tag}</td>
+              <td className="px-4 py-2">
+                ${parseFloat(p.unit_price).toFixed(2)}
+              </td>
+              <td className="px-4 py-2">{p.quantity}</td>
               <td className="px-4 py-2 space-x-2">
                 <button
                   onClick={() => startEdit(p)}

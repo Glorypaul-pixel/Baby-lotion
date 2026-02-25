@@ -29,7 +29,7 @@ const Loader = () => (
 
 /* App Content */
 const AppContent = () => {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading } = useAuth();
   const [currentPage, setCurrentPage] = useState("home");
 
   if (loading) return <Loader />;
@@ -38,7 +38,7 @@ const AppContent = () => {
     // Admin page protection
     if (currentPage === "admin") {
       if (!user) return <Auth onNavigate={setCurrentPage} />;
-      if (!isAdmin) return <Home onNavigate={setCurrentPage} />;
+      // if (!isAdmin) return <Home onNavigate={setCurrentPage} />;
       return <AdminDashboard />;
     }
 
@@ -56,6 +56,7 @@ const AppContent = () => {
       case "cart":
         return <Cart onNavigate={setCurrentPage} />;
       case "auth":
+        // Auto redirect if logged in
         return user ? <Home onNavigate={setCurrentPage} /> : <Auth onNavigate={setCurrentPage} />;
       case "checkout":
         return user ? <Checkout onNavigate={setCurrentPage} /> : <Auth onNavigate={setCurrentPage} />;

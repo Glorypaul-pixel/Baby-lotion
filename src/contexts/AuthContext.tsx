@@ -1,27 +1,73 @@
-// src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { toast } from "react-hot-toast";
+import toast from "react-hot-toast";
+import { jwtDecode } from "jwt-decode";
 
 export type User = {
   id: string;
   email: string;
-  name: string;
-  role: "admin" | "user";
-  created_at: string;
+  fullname?: string;
 };
 
 type AuthContextType = {
   user: User | null;
-  isAdmin: boolean;
   loading: boolean;
-  signUp: (email: string) => Promise<void>;
-  signIn: (email: string) => Promise<void>;
-  signOut: () => Promise<void>;
+  isAdmin: boolean;
+  signUp: (data: {
+    email: string;
+    password: string;
+    fullname?: string;
+  }) => Promise<void>;
+  signIn: (data: { email: string; password: string }) => Promise<void>;
+  signOut: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-const LOCAL_STORAGE_KEY = "mock_user";
-const ADMIN_EMAIL = "admin@example.com";
+
+const STORAGE_KEY = "auth_user";
+const ACCESS_TOKEN_KEY = "access_token";
+const REFRESH_TOKEN_KEY = "refresh_token";
+
+const ADMIN_EMAILS = ["brianobot9@gmail.com"];
+
+const API_BASE =
+  import.meta.env.VITE_API_BASE || "https://preferrable-api.onrender.com/api";
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+export function getAccessToken(): string | null {
+  return localStorage.getItem(ACCESS_TOKEN_KEY);
+}
+
+export function getAuthHeaders(): HeadersInit {
+  const token = getAccessToken();
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
+function isTokenExpired(token: string): boolean {
+  try {
+    const { exp } = jwtDecode<{ exp: number }>(token);
+    return Date.now() >= exp * 1000;
+  } catch {
+    return true;
+  }
+}
+
+function clearStorage() {
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+}
+
+function normalizeError(err: unknown, fallback: string): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  return fallback;
+}
+
+// ─── Provider ────────────────────────────────────────────────────────────────
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -29,67 +75,110 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ derive admin status from user
-  const isAdmin = user?.role === "admin";
+  const isAdmin = user ? ADMIN_EMAILS.includes(user.email) : false;
 
+  // Restore session on mount
   useEffect(() => {
-    const storedUser = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    try {
+      const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+      const stored = localStorage.getItem(STORAGE_KEY);
+
+      if (accessToken && stored) {
+        if (isTokenExpired(accessToken)) {
+          clearStorage();
+        } else {
+          setUser(JSON.parse(stored));
+        }
+      }
+    } catch {
+      clearStorage();
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
-  const signUp = async (email: string) => {
-    const newUser: User = {
-      id: crypto.randomUUID(),
-      email,
-      name: email.split("@")[0],
-      role: email === ADMIN_EMAIL ? "admin" : "user",
-      created_at: new Date().toISOString(),
-    };
+  // ================= SIGN UP =================
+  // Response: { detail, email, fullname, date_created, date_updated }
+  // No token returned — user must sign in after signing up
+  const signUp = async (data: {
+    email: string;
+    password: string;
+    fullname?: string;
+  }) => {
+    try {
+      const res = await fetch(`${API_BASE}/users/sign_up/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          fullname: data.fullname ?? data.email.split("@")[0],
+        }),
+      });
 
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newUser));
-    setUser(newUser);
-    toast.success("Account created!");
+      const result = await res.json();
+      if (!res.ok)
+        throw new Error(result.detail || result.message || "Signup failed");
+
+      toast.success(result.detail || "Account created!");
+    } catch (err: unknown) {
+      const message = normalizeError(err, "Signup failed");
+      console.error(err);
+      toast.error(message);
+      throw new Error(message);
+    }
   };
 
-  const signIn = async (email: string) => {
-    const storedUser = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (!storedUser) throw new Error("No user found. Please sign up.");
+  // ================= SIGN IN =================
+  // Response: { detail, user: { id, email }, access_token, refresh_token }
+  const signIn = async (data: { email: string; password: string }) => {
+    try {
+      const res = await fetch(`${API_BASE}/users/sign_in/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
 
-    const parsedUser: User = JSON.parse(storedUser);
-    if (parsedUser.email !== email) throw new Error("Invalid email");
+      const result = await res.json();
+      if (!res.ok)
+        throw new Error(
+          result.detail || result.message || "Invalid credentials"
+        );
 
-    setUser(parsedUser);
-    toast.success("Signed in!");
+      const user: User = result.user;
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+      localStorage.setItem(ACCESS_TOKEN_KEY, result.access_token);
+      localStorage.setItem(REFRESH_TOKEN_KEY, result.refresh_token);
+
+      setUser(user);
+      toast.success(result.detail || "Welcome back!");
+    } catch (err: unknown) {
+      const message = normalizeError(err, "Login failed");
+      console.error(err);
+      toast.error(message);
+      throw new Error(message);
+    }
   };
 
-  const signOut = async () => {
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
+  // ================= SIGN OUT =================
+  const signOut = () => {
+    clearStorage();
     setUser(null);
-    toast.success("Signed out!");
+    toast.success("Signed out");
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAdmin, // ✅ THIS WAS MISSING
-        loading,
-        signUp,
-        signIn,
-        signOut,
-      }}
-    >
+    <AuthContext.Provider value={{ user, loading, isAdmin, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Hook
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within an AuthProvider");
-  return context;
+// ─── Hook ────────────────────────────────────────────────────────────────────
+
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 };

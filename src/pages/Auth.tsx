@@ -8,10 +8,13 @@ type AuthProps = {
 };
 
 export const Auth: React.FC<AuthProps> = ({ onNavigate }) => {
-  const { signUp, signIn } = useAuth(); // ✅ Use the context
+  const { signUp, signIn } = useAuth();
+
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState(""); // can ignore for mock
+  const [password, setPassword] = useState("");
+  const [fullname, setFullname] = useState(""); // Added for signup
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -22,37 +25,38 @@ export const Auth: React.FC<AuthProps> = ({ onNavigate }) => {
 
     try {
       if (isSignUp) {
-        await signUp(email); // ✅ Create user in context
+        await signUp({ email, password, fullname });
         toast.success("Account created successfully!");
-        setIsSignUp(false); // Switch to sign-in
+        setIsSignUp(false);
+        setEmail("");
+        setPassword("");
+        setFullname("");
       } else {
-        await signIn(email); // ✅ Sign in the user in context
+        await signIn({ email, password });
         toast.success("Signed in successfully!");
-        onNavigate("home"); // Redirect after login
+        onNavigate("home");
       }
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-        toast.error(err.message);
-      } else {
-        setError("An error occurred");
-        toast.error("An error occurred");
-      }
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-16 bg-gradient-to-br from-peach-100 via-white to-peach-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300 flex items-center justify-center">
+    <div className="min-h-screen pt-24 pb-16 bg-gradient-to-br from-peach-100 via-white to-peach-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
       <div className="max-w-md w-full mx-4">
-        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 animate-fade-in-up">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8">
+          {/* Logo */}
           <div className="flex justify-center mb-6">
             <div className="bg-gradient-to-br from-peach-400 to-peach-500 p-4 rounded-full">
               <Baby className="w-12 h-12 text-white" />
             </div>
           </div>
 
+          {/* Heading */}
           <h2 className="text-3xl font-bold text-center mb-2 text-gray-900 dark:text-white">
             {isSignUp ? "Create Account" : "Welcome Back"}
           </h2>
@@ -62,15 +66,34 @@ export const Auth: React.FC<AuthProps> = ({ onNavigate }) => {
               : "Sign in to your account"}
           </p>
 
+          {/* Error */}
           {error && (
             <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/30 border border-red-500 rounded-lg text-red-700 dark:text-red-400 text-sm">
               {error}
             </div>
           )}
 
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Fullname (only for signup) */}
+            {isSignUp && (
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={fullname}
+                  onChange={(e) => setFullname(e.target.value)}
+                  placeholder="Your full name"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-peach-500 outline-none"
+                />
+              </div>
+            )}
+
+            {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 Email Address
               </label>
               <input
@@ -78,30 +101,32 @@ export const Auth: React.FC<AuthProps> = ({ onNavigate }) => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-peach-500 focus:border-transparent transition-all"
                 placeholder="you@example.com"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-peach-500 outline-none"
               />
             </div>
 
+            {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 Password
               </label>
               <input
                 type="password"
                 required
+                minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-peach-500 focus:border-transparent transition-all"
                 placeholder="••••••••"
-                minLength={6}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-peach-500 outline-none"
               />
             </div>
 
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-gradient-to-r from-peach-500 to-peach-600 text-white rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full py-4 bg-gradient-to-r from-peach-500 to-peach-600 text-white rounded-full font-semibold hover:shadow-lg transition disabled:opacity-50"
             >
               {loading
                 ? "Please wait..."
@@ -111,6 +136,7 @@ export const Auth: React.FC<AuthProps> = ({ onNavigate }) => {
             </button>
           </form>
 
+          {/* Toggle */}
           <div className="mt-6 text-center">
             <button
               onClick={() => {
@@ -126,10 +152,11 @@ export const Auth: React.FC<AuthProps> = ({ onNavigate }) => {
           </div>
         </div>
 
+        {/* Back home */}
         <div className="mt-6 text-center">
           <button
             onClick={() => onNavigate("home")}
-            className="text-gray-600 dark:text-gray-400 hover:text-peach-600 dark:hover:text-peach-400 transition-colors"
+            className="text-gray-600 dark:text-gray-400 hover:text-peach-600"
           >
             Back to Home
           </button>
