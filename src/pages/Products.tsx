@@ -14,7 +14,7 @@ const CATEGORIES = [
   { id: "all", name: "All Products" },
   { id: "baby soap", name: "Baby Soap" },
   { id: "baby lotion", name: "Baby Lotion" },
-  { id: "adult lotion", name: "Adult Lotion" },
+  { id: "adult lotion", name: "Baby Body Wash" },
 ];
 
 export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
