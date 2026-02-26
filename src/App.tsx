@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { CartProvider } from "./contexts/CartContext";
+import { CartProvider, useCart } from "./contexts/CartContext";
 
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
+import { Loader } from "./components/Loader"; // ✅ use the real Loader component
 
 import { Home } from "./pages/Home";
 import { Products } from "./pages/Products";
@@ -20,25 +21,30 @@ import { Returns } from "./pages/Returns";
 import { FAQ } from "./pages/FAQ";
 import { AdminDashboard } from "./pages/admin/Dashboard";
 
-/* Loader */
-const Loader = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <p className="text-lg font-medium">Loading...</p>
-  </div>
-);
-
 /* App Content */
 const AppContent = () => {
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuth(); // ✅ called inside a component — valid
+  const { fetchCart, clearCart } = useCart();
   const [currentPage, setCurrentPage] = useState("home");
 
-  if (loading) return <Loader />;
+  // ✅ Sync cart with auth state:
+  // - skip while AuthContext is still restoring session (loading)
+  // - fetch cart when user is present (login or session restore)
+  // - clear cart when user is null (logout)
+  React.useEffect(() => {
+    if (loading) return;
+    if (user) {
+      fetchCart();
+    } else {
+      clearCart();
+    }
+  }, [user, loading]);
+
+  if (loading) return <Loader fullScreen message="Starting up" />;
 
   const renderPage = () => {
-    // Admin page protection
     if (currentPage === "admin") {
       if (!user) return <Auth onNavigate={setCurrentPage} />;
-      // if (!isAdmin) return <Home onNavigate={setCurrentPage} />;
       return <AdminDashboard />;
     }
 
@@ -56,12 +62,23 @@ const AppContent = () => {
       case "cart":
         return <Cart onNavigate={setCurrentPage} />;
       case "auth":
-        // Auto redirect if logged in
-        return user ? <Home onNavigate={setCurrentPage} /> : <Auth onNavigate={setCurrentPage} />;
+        return user ? (
+          <Home onNavigate={setCurrentPage} />
+        ) : (
+          <Auth onNavigate={setCurrentPage} />
+        );
       case "checkout":
-        return user ? <Checkout onNavigate={setCurrentPage} /> : <Auth onNavigate={setCurrentPage} />;
+        return user ? (
+          <Checkout onNavigate={setCurrentPage} />
+        ) : (
+          <Auth onNavigate={setCurrentPage} />
+        );
       case "orders":
-        return user ? <Orders onNavigate={setCurrentPage} /> : <Auth onNavigate={setCurrentPage} />;
+        return user ? (
+          <Orders onNavigate={setCurrentPage} />
+        ) : (
+          <Auth onNavigate={setCurrentPage} />
+        );
       case "shipping":
         return <Shipping />;
       case "returns":

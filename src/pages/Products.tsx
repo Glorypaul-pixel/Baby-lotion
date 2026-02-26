@@ -1,7 +1,10 @@
+// src/pages/Products.tsx
 import React, { useEffect, useState } from "react";
 import { Star, Filter, ShoppingCart } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useProducts, type Product } from "../hooks/useProducts";
+import { useCart } from "../contexts/CartContext";
+import { useAuth } from "../contexts/AuthContext";
 
 type ProductsProps = {
   onNavigate: (page: string) => void;
@@ -10,34 +13,44 @@ type ProductsProps = {
 const CATEGORIES = [
   { id: "all", name: "All Products" },
   { id: "baby soap", name: "Baby Soap" },
-  { id: "baby_lotion", name: "Baby Lotion" },
-  { id: "adult_lotion", name: "Adult Lotion" },
+  { id: "baby lotion", name: "Baby Lotion" },
+  { id: "adult lotion", name: "Adult Lotion" },
 ];
 
 export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
   const { products, loading, error } = useProducts();
+  const { addToCart } = useCart();
+  const { user } = useAuth();
+
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
-
-  // mock auth — replace with useAuth() once CORS is fixed
-  const user = { id: "mock-user" };
 
   useEffect(() => {
     setFilteredProducts(
       selectedCategory === "all"
         ? products
-        : products.filter((p) => p.tag === selectedCategory)
+        : products.filter((p) => p.tag === selectedCategory),
     );
   }, [selectedCategory, products]);
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = (product: Product) => {
     if (!user) {
       toast.error("Please sign in to add items to cart.");
       onNavigate("auth");
       return;
     }
-    // TODO: wire up real cart endpoint
-    toast.success("Added to cart!");
+    addToCart({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: parseFloat(product.unit_price),
+      image_url: product.image,
+      category: product.tag,
+      stock: product.quantity,
+      is_featured: false,
+      created_at: product.date_created,
+    });
+    toast.success(`${product.name} added to cart!`);
   };
 
   if (error) {
@@ -106,7 +119,9 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
                   </div>
 
                   <div className="p-6">
-                    <h3 className="text-lg font-bold mb-2">{product.name}</h3>
+                    <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">
+                      {product.name}
+                    </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                       {product.description}
                     </p>
@@ -118,7 +133,7 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
                           className="w-4 h-4 fill-peach-400 text-peach-400"
                         />
                       ))}
-                      <span className="ml-2 text-sm">(50+)</span>
+                      <span className="ml-2 text-sm text-gray-500">(50+)</span>
                     </div>
 
                     <div className="flex justify-between items-center mb-4">
@@ -131,9 +146,9 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
                     </div>
 
                     <button
-                      onClick={() => handleAddToCart()}
+                      onClick={() => handleAddToCart(product)}
                       disabled={product.quantity === 0}
-                      className="w-full py-3 bg-gradient-to-r from-peach-500 to-peach-600 text-white rounded-full flex justify-center items-center gap-2 disabled:opacity-50"
+                      className="w-full py-3 bg-gradient-to-r from-peach-500 to-peach-600 text-white rounded-full flex justify-center items-center gap-2 disabled:opacity-50 hover:shadow-lg transition-all duration-300"
                     >
                       <ShoppingCart className="w-5 h-5" />
                       {product.quantity === 0 ? "Out of Stock" : "Add to Cart"}
@@ -144,7 +159,7 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
         </div>
 
         {!loading && filteredProducts.length === 0 && (
-          <p className="text-center py-20 text-xl">
+          <p className="text-center py-20 text-xl text-gray-500">
             No products found in this category
           </p>
         )}
