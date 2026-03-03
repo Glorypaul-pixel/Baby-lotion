@@ -1,5 +1,11 @@
 // src/contexts/CartContext.tsx
-import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+} from "react";
 import { getAccessToken } from "./AuthContext";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -39,26 +45,27 @@ type CartContextType = {
   removeFromCart: (cartItemId: string) => Promise<void>;
   updateQuantity: (cartItemId: string, quantity: number) => Promise<void>;
   clearCart: () => void;
-  fetchCart: () => Promise<void>; // ✅ call this after sign-in
+  fetchCart: () => Promise<void>;
 };
 
 // ── API helper ───────────────────────────────────────────────────────────────
 
-// ✅ Must match AuthContext — VITE_API_BASE already includes /api
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE ?? "https://preferrable-api.onrender.com/api";
 
-// ✅ The ", unknown" constraint stops TSX from misreading <T> as a JSX element
-async function apiFetch<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
+async function apiFetch<T = unknown>(
+  path: string,
+  options: RequestInit = {},
+): Promise<T> {
   const token = getAccessToken();
 
   const headers: Record<string, string> = {
-    "Accept": "application/json",
+    Accept: "application/json",
     "Content-Type": "application/json",
   };
 
   if (token) {
-    headers["Authorization"] = `Bearer ${token}`; // ✅ bracket notation avoids JSX confusion
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   const res = await fetch(`${API_BASE_URL}${path}`, {
@@ -76,14 +83,46 @@ async function apiFetch<T = unknown>(path: string, options: RequestInit = {}): P
   return res.json() as Promise<T>;
 }
 
+// ── localStorage helpers ─────────────────────────────────────────────────────
+
+const PRODUCT_MAP_KEY = "cart_product_map";
+
+function loadProductMap(): Record<string, Product> {
+  try {
+    const stored = localStorage.getItem(PRODUCT_MAP_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveProductMap(map: Record<string, Product>) {
+  try {
+    localStorage.setItem(PRODUCT_MAP_KEY, JSON.stringify(map));
+  } catch {
+    // storage full or unavailable — fail silently
+  }
+}
+
 // ── Context ──────────────────────────────────────────────────────────────────
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [cartItems, setCartItems] = useState<CartApiItem[]>([]);
-  const [productMap, setProductMap] = useState<Record<string, Product>>({});
+
+  // ✅ Load productMap from localStorage on first render so cart survives refresh
+  const [productMap, setProductMap] =
+    useState<Record<string, Product>>(loadProductMap);
+
   const [loading, setLoading] = useState(false);
+
+  // ✅ Persist productMap to localStorage whenever it changes
+  useEffect(() => {
+    saveProductMap(productMap);
+  }, [productMap]);
 
   const fetchCart = async () => {
     setLoading(true);
@@ -98,7 +137,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // ✅ Only fetch cart when user is logged in — avoids 403 on mount
     const token = getAccessToken();
     if (token) fetchCart();
   }, []);
@@ -112,20 +150,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           product: productMap[item.product],
           quantity: item.quantity,
         })),
-    [cartItems, productMap]
+    [cartItems, productMap],
   );
 
   const cartTotal = useMemo(
-    () => cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
-    [cart]
+    () =>
+      cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
+    [cart],
   );
 
   const cartCount = useMemo(
     () => cart.reduce((sum, item) => sum + item.quantity, 0),
-    [cart]
+    [cart],
   );
 
   const addToCart = async (product: Product, quantity = 1) => {
+    // ✅ Always keep productMap up to date so we have product details after refresh
     setProductMap((prev) => ({ ...prev, [product.id]: product }));
 
     const existing = cartItems.find((item) => item.product === product.id);
@@ -154,7 +194,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify({ quantity }),
       });
       setCartItems((prev) =>
-        prev.map((item) => (item.id === cartItemId ? updated : item))
+        prev.map((item) => (item.id === cartItemId ? updated : item)),
       );
     } catch (err) {
       console.error("Failed to update quantity:", err);
@@ -172,11 +212,26 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const clearCart = () => setCartItems([]);
+  const clearCart = () => {
+    setCartItems([]);
+    // ✅ Also wipe the persisted product map on explicit cart clear
+    setProductMap({});
+    localStorage.removeItem(PRODUCT_MAP_KEY);
+  };
 
   return (
     <CartContext.Provider
-      value={{ cart, cartTotal, cartCount, loading, addToCart, removeFromCart, updateQuantity, clearCart, fetchCart }}
+      value={{
+        cart,
+        cartTotal,
+        cartCount,
+        loading,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        fetchCart,
+      }}
     >
       {children}
     </CartContext.Provider>

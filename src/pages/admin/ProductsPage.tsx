@@ -10,7 +10,6 @@ export const ProductsPage: React.FC = () => {
     quantity: 0,
   });
 
-  // Start editing
   const startEdit = (product: Product) => {
     setEditingId(product.id);
     setEditForm({
@@ -25,8 +24,6 @@ export const ProductsPage: React.FC = () => {
     setEditForm({ name: "", unit_price: "", quantity: 0 });
   };
 
-  // NOTE: Add/Edit/Delete will need backend endpoints — ask the backend guy
-  // for POST /api/products/, PATCH /api/products/{id}/, DELETE /api/products/{id}/
   const handleSave = () => {
     console.log("TODO: PATCH /api/products/", editingId, editForm);
     cancelEdit();
@@ -61,9 +58,9 @@ export const ProductsPage: React.FC = () => {
     <div>
       <h1 className="text-2xl font-bold mb-6">Products Management</h1>
 
-      {/* Edit Form — only shown when editing */}
+      {/* Edit Form */}
       {editingId && (
-        <div className="mb-6 flex gap-2 items-center bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+        <div className="mb-6 flex flex-wrap gap-2 items-center bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
           <input
             type="text"
             placeholder="Name"
@@ -111,7 +108,6 @@ export const ProductsPage: React.FC = () => {
             <th className="px-4 py-2 text-left">Name</th>
             <th className="px-4 py-2 text-left">Tag</th>
             <th className="px-4 py-2 text-left">Price</th>
-            <th className="px-4 py-2 text-left">Quantity</th>
             <th className="px-4 py-2 text-left">Actions</th>
           </tr>
         </thead>
@@ -124,9 +120,8 @@ export const ProductsPage: React.FC = () => {
               <td className="px-4 py-2">{p.name}</td>
               <td className="px-4 py-2 capitalize">{p.tag}</td>
               <td className="px-4 py-2">
-                ${parseFloat(p.unit_price).toFixed(2)}
+                ₦{parseFloat(p.unit_price).toFixed(2)}
               </td>
-              <td className="px-4 py-2">{p.quantity}</td>
               <td className="px-4 py-2 space-x-2">
                 <button
                   onClick={() => startEdit(p)}

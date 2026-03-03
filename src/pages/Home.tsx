@@ -156,7 +156,6 @@ const STYLES = `
     animation: trailFade 0.5s ease forwards;
   }
 
-  /* Hide custom cursor on touch devices */
   @media (hover: none) {
     .cursor-dot, .cursor-ring, .cursor-trail { display: none !important; }
     .preferable-page { cursor: auto; }
@@ -171,8 +170,6 @@ const STYLES = `
   .shimmer-extreme {
     background: linear-gradient(90deg, var(--peach) 0%, var(--gold) 20%, var(--pink) 40%, var(--lime) 60%, var(--peach) 80%, var(--gold) 100%);
     background-size: 400% auto;
-    // -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    // animation: shimmerBg 3s linear infinite;
   }
   .reveal-flip      { opacity:0; transform: perspective(1000px) rotateY(-8deg) rotateX(4deg) scale(0.92); transition: none; }
   .reveal-flip.on   { animation: cardFlip 0.7s cubic-bezier(.22,.68,0,1.2) both; }
@@ -544,7 +541,6 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
         id="home"
         className="relative min-h-screen flex items-center overflow-hidden grad-anim pt-20 dark:bg-none dark:bg-gray-900"
       >
-        {/* Blobs — reduced on mobile */}
         <div
           className="blob hidden sm:block"
           style={{
@@ -750,14 +746,12 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                       ))}
                     </div>
                     <div>
+                      {/* ✅ Stars — static, no animation */}
                       <div className="flex">
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
                             className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-yellow-400"
-                            style={{
-                              animation: `waveText 1s ease ${i * 100}ms infinite`,
-                            }}
                           />
                         ))}
                       </div>
@@ -918,14 +912,12 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                           >
                             ₦{parseFloat(product.unit_price)}
                           </span>
+                          {/* ✅ Stars — static, no animation */}
                           <div className="flex">
                             {[...Array(5)].map((_, i) => (
                               <Star
                                 key={i}
                                 className="w-3 h-3 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400"
-                                style={{
-                                  animation: `waveText 1.2s ease ${i * 100}ms infinite`,
-                                }}
                               />
                             ))}
                           </div>
@@ -1137,14 +1129,12 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                       animation: `floatY ${3 + idx * 0.3}s ease-in-out infinite`,
                     }}
                   />
+                  {/* ✅ Stars — static, no animation */}
                   <div className="flex mb-3 sm:mb-4">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
                         className="w-4 h-4 sm:w-5 sm:h-5 fill-yellow-400 text-yellow-400"
-                        style={{
-                          animation: `waveText 1.2s ease ${i * 80}ms infinite`,
-                        }}
                       />
                     ))}
                   </div>

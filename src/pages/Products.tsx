@@ -21,7 +21,6 @@ const STYLES = `
   @keyframes morphBlob{0%,100%{border-radius:60% 40% 30% 70%/60% 30% 70% 40%;}25%{border-radius:30% 60% 70% 40%/50% 60% 30% 60%;}50%{border-radius:50% 60% 30% 40%/70% 30% 50% 60%;}75%{border-radius:40% 30% 60% 70%/30% 70% 40% 50%;}}
   @keyframes badgePop{0%{transform:scale(0) rotate(-20deg);opacity:0;}70%{transform:scale(1.2) rotate(5deg);}85%{transform:scale(.95) rotate(-2deg);}100%{transform:scale(1) rotate(0);opacity:1;}}
   @keyframes shimmerSkel{0%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
-  @keyframes waveText{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
   @keyframes ticker{from{transform:translateX(0);}to{transform:translateX(-50%);}}
   @keyframes dotBounce{0%,100%{transform:translateY(0);opacity:.5;}50%{transform:translateY(-8px);opacity:1;}}
   @keyframes stockFade{from{opacity:0;transform:scale(.8);}to{opacity:1;transform:scale(1);}}
@@ -47,9 +46,6 @@ const STYLES = `
   .dot-1{animation:dotBounce .9s ease-in-out 0s infinite;}
   .dot-2{animation:dotBounce .9s ease-in-out .15s infinite;}
   .dot-3{animation:dotBounce .9s ease-in-out .3s infinite;}
-  .star-i{display:inline-block;}
-  .star-row:hover .star-i{animation:waveText .8s ease both;}
-  .star-row:hover .star-i:nth-child(1){animation-delay:0ms;} .star-row:hover .star-i:nth-child(2){animation-delay:60ms;} .star-row:hover .star-i:nth-child(3){animation-delay:120ms;} .star-row:hover .star-i:nth-child(4){animation-delay:180ms;} .star-row:hover .star-i:nth-child(5){animation-delay:240ms;}
   @media(hover:none){.pr-blob{display:none;}}
 `;
 
@@ -190,22 +186,19 @@ const ProductCard: React.FC<{
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 line-clamp-2 leading-relaxed">
             {product.description}
           </p>
-          <div className="flex items-center mb-3 star-row">
+          {/* ✅ Stars — static, no animation */}
+          <div className="flex items-center mb-3">
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
-                className="star-i w-3 h-3 sm:w-3.5 sm:h-3.5 fill-yellow-400 text-yellow-400"
+                className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-yellow-400 text-yellow-400"
               />
             ))}
             <span className="ml-1.5 text-xs text-gray-400">(50+)</span>
           </div>
           <div className="flex justify-between items-center mb-3 sm:mb-4">
-            {/* ✅ Fixed: $ → ₦ */}
             <span className="text-lg sm:text-xl font-black ab-shimmer">
               ₦{parseFloat(product.unit_price).toFixed(2)}
-            </span>
-            <span className="text-xs text-gray-400">
-              {product.quantity} in stock
             </span>
           </div>
           <button
@@ -387,7 +380,7 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
           ))}
         </div>
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
             {[...Array(8)].map((_, i) => (
               <div
                 key={i}
@@ -409,7 +402,7 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 px-4 sm:px-0">
               {filtered.map((p, i) => (
                 <ProductCard
                   key={p.id}
