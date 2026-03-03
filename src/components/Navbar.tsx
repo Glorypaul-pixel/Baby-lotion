@@ -1,196 +1,135 @@
-import React, { useState } from "react";
-import {
-  ShoppingCart,
-  Sun,
-  Moon,
-  Menu,
-  X,
-  User,
-  LogOut,
-  Baby,
-  LayoutDashboard,
-} from "lucide-react";
-import { useTheme } from "../contexts/ThemeContext";
+import React, { useEffect, useState } from "react";
+import { ShoppingCart, Menu, X, User, LogOut, Baby, LayoutDashboard } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useCart } from "../contexts/CartContext";
 
-type NavbarProps = {
-  onNavigate: (page: string) => void;
-  currentPage: string;
-};
+const STYLES = `
+  @keyframes badgePop{0%{transform:scale(0) rotate(-20deg);opacity:0;}70%{transform:scale(1.2) rotate(5deg);}85%{transform:scale(.95) rotate(-2deg);}100%{transform:scale(1) rotate(0);opacity:1;}}
+  @keyframes floatY{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+  @keyframes mobileIn{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes dropIn{from{opacity:0;transform:translateY(-8px) scale(.96);}to{opacity:1;transform:translateY(0) scale(1);}}
+  @keyframes countPop{0%{transform:scale(0);}70%{transform:scale(1.2);}100%{transform:scale(1);}}
+  .nb-logo-icon{animation:floatY 3.5s ease-in-out infinite;}
+  .nb-link{position:relative;transition:color .2s ease;}
+  .nb-link::after{content:"";position:absolute;left:0;bottom:-2px;width:0;height:2px;background:linear-gradient(90deg,#f97316,#ec4899);border-radius:2px;transition:width .3s ease;}
+  .nb-link:hover::after,.nb-link.active::after{width:100%;}
+  .nb-icon-btn{transition:transform .2s cubic-bezier(.22,.68,0,1.4),background .2s ease;}
+  .nb-icon-btn:hover{transform:scale(1.12);}
+  .nb-signin{transition:transform .2s ease,box-shadow .2s ease;position:relative;overflow:hidden;}
+  .nb-signin:hover{transform:scale(1.04);box-shadow:0 8px 20px rgba(249,115,22,.35);}
+  .nb-signin::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.3) 50%,transparent 60%);transform:translateX(-100%);transition:transform .5s ease;}
+  .nb-signin:hover::after{transform:translateX(100%);}
+  .nb-cart-count{animation:countPop .4s cubic-bezier(.22,.68,0,1.4) both;}
+  .nb-dropdown{animation:dropIn .25s cubic-bezier(.22,.68,0,1.2) both;}
+  .nb-dropdown-item{transition:background .15s ease,transform .15s ease,color .15s ease;}
+  .nb-dropdown-item:hover{transform:translateX(3px);}
+  .nb-mobile{animation:mobileIn .3s cubic-bezier(.22,.68,0,1.2) both;}
+  .nb-mobile-item{transition:background .15s ease,transform .15s ease;}
+  .nb-mobile-item:hover{transform:translateX(4px);}
+  .ab-shimmer{background:linear-gradient(135deg,#f97316 0%,#ec4899 50%,#fbbf24 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+`;
 
-export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
-  const { theme, toggleTheme } = useTheme();
-  const { user, isAdmin, signOut } = useAuth();
-  const { cartCount } = useCart();
+function useStyles(){useEffect(()=>{if(document.getElementById("pref-nb-styles"))return;const s=document.createElement("style");s.id="pref-nb-styles";s.textContent=STYLES;document.head.appendChild(s);},[]);}
 
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showAuthMenu, setShowAuthMenu] = useState(false);
+type NavbarProps={onNavigate:(page:string)=>void;currentPage:string};
 
-  const navLinks = [
-    { name: "Home", page: "home" },
-    { name: "Products", page: "products" },
-    { name: "About", page: "about" },
-    { name: "Blog", page: "blog" },
-    { name: "Contact", page: "contact" },
-  ];
+export const Navbar:React.FC<NavbarProps>=({onNavigate,currentPage})=>{
+  useStyles();
+  const{user,isAdmin,signOut}=useAuth();
+  const{cartCount}=useCart();
+  const[mobileOpen,setMobileOpen]=useState(false);
+  const[authMenu,setAuthMenu]=useState(false);
+  const[scrolled,setScrolled]=useState(false);
+  useEffect(()=>{const fn=()=>setScrolled(window.scrollY>10);window.addEventListener("scroll",fn);return()=>window.removeEventListener("scroll",fn);},[]);
 
-  const handleSignOut = async () => {
-    await signOut();
-    setShowAuthMenu(false);
-    setMobileMenuOpen(false);
-    onNavigate("home");
-  };
+  // Close menus when clicking outside
+  useEffect(()=>{
+    if(!authMenu)return;
+    const fn=(e:MouseEvent)=>{
+      const t=e.target as HTMLElement;
+      if(!t.closest("[data-auth-menu]"))setAuthMenu(false);
+    };
+    document.addEventListener("mousedown",fn);
+    return()=>document.removeEventListener("mousedown",fn);
+  },[authMenu]);
 
-  const navigateAndClose = (page: string) => {
-    onNavigate(page);
-    setShowAuthMenu(false);
-    setMobileMenuOpen(false);
-  };
+  const navLinks=[{name:"Home",page:"home"},{name:"Products",page:"products"},{name:"About",page:"about"},{name:"Blog",page:"blog"},{name:"Contact",page:"contact"}];
+  const go=(page:string)=>{onNavigate(page);setAuthMenu(false);setMobileOpen(false);};
+  const handleSignOut=async()=>{await signOut();go("home");};
 
-  return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-peach-200 dark:border-gray-700 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-
+  return(
+    <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 "
+      style={{background:scrolled?"rgba(255,255,255,.92)":"rgba(255,255,255,.75)",backdropFilter:"blur(20px)",borderBottom:scrolled?"1px solid rgba(249,115,22,.15)":"1px solid transparent",boxShadow:scrolled?"0 4px 32px rgba(249,115,22,.08)":"none",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Logo */}
-          <div
-            className="flex items-center space-x-2 cursor-pointer group"
-            onClick={() => navigateAndClose("home")}
-          >
-            <div className="bg-gradient-to-br from-peach-400 to-peach-500 p-2 rounded-full group-hover:scale-110 transition">
-              <Baby className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-peach-500 to-peach-600 bg-clip-text text-transparent">
-              Preferrable
-            </span>
+          <div className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group" onClick={()=>go("home")}>
+            <div className="nb-logo-icon w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center" style={{background:"linear-gradient(135deg,#f97316,#ec4899)"}}><Baby className="w-4 h-4 sm:w-5 sm:h-5 text-white"/></div>
+            <span className="text-lg sm:text-xl font-black ab-shimmer" style={{fontFamily:"Syne,sans-serif"}}>Preferrable</span>
           </div>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <button
-                key={link.page}
-                onClick={() => navigateAndClose(link.page)}
-                className={`font-medium transition ${
-                  currentPage === link.page
-                    ? "text-peach-600"
-                    : "text-gray-700 dark:text-gray-300 hover:text-peach-600"
-                }`}
-              >
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center gap-6 lg:gap-8">
+            {navLinks.map(link=>(
+              <button key={link.page} onClick={()=>go(link.page)}
+                className={`nb-link text-sm font-bold transition-colors ${currentPage===link.page?"text-orange-500 active":"text-gray-700 dark:text-gray-300 hover:text-orange-500"}`}>
                 {link.name}
               </button>
             ))}
           </div>
 
-          {/* Right Actions */}
-          <div className="flex items-center space-x-4">
-
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full hover:bg-peach-100 dark:hover:bg-gray-800"
-            >
-              {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
-            </button>
-
-            {/* Auth Menu */}
-            {user ? (
-              <div className="relative">
-                <button
-                  onClick={() => setShowAuthMenu(!showAuthMenu)}
-                  className="p-2 rounded-full hover:bg-peach-100 dark:hover:bg-gray-800"
-                >
-                  <User size={18} />
-                </button>
-
-                {showAuthMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2">
-                    
-                    {/* Admin Dashboard */}
-                    {isAdmin && (
-                      <button
-                        onClick={() => navigateAndClose("admin")}
-                        className="w-full px-4 py-2 text-left hover:bg-peach-50 dark:hover:bg-gray-700 flex items-center gap-2"
-                      >
-                        <LayoutDashboard size={16} />
-                        Dashboard
-                      </button>
-                    )}
-
-                    {/* My Orders */}
-                    <button
-                      onClick={() => navigateAndClose("orders")}
-                      className="w-full px-4 py-2 text-left hover:bg-peach-50 dark:hover:bg-gray-700"
-                    >
-                      My Orders
-                    </button>
-
-                    {/* Sign Out */}
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full px-4 py-2 text-left hover:bg-peach-50 dark:hover:bg-gray-700 flex items-center gap-2"
-                    >
-                      <LogOut size={16} />
-                      Sign Out
-                    </button>
+          {/* Actions */}
+          <div className="flex items-center gap-1 sm:gap-2">
+            {user?(
+              <div className="relative" data-auth-menu>
+                <button onClick={()=>setAuthMenu(!authMenu)} className="nb-icon-btn p-2 rounded-full hover:bg-orange-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"><User size={16} className="sm:w-[18px] sm:h-[18px]"/></button>
+                {authMenu&&(
+                  <div className="nb-dropdown absolute right-0 mt-2 w-48 sm:w-52 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl py-2 overflow-hidden" style={{border:"1px solid rgba(249,115,22,.15)"}}>
+                    <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700 mb-1">
+                      <p className="text-xs font-black text-gray-400 uppercase tracking-widest">My Account</p>
+                    </div>
+                    {isAdmin&&<button onClick={()=>go("admin")} className="nb-dropdown-item w-full px-4 py-2.5 text-left text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-700 flex items-center gap-2"><LayoutDashboard size={15}/>Dashboard</button>}
+                    <button onClick={()=>go("orders")} className="nb-dropdown-item w-full px-4 py-2.5 text-left text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-700">My Orders</button>
+                    <div className="border-t border-gray-100 dark:border-gray-700 mt-1 pt-1">
+                      <button onClick={handleSignOut} className="nb-dropdown-item w-full px-4 py-2.5 text-left text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"><LogOut size={15}/>Sign Out</button>
+                    </div>
                   </div>
                 )}
               </div>
-            ) : (
-              <button
-                onClick={() => navigateAndClose("auth")}
-                className="px-4 py-2 bg-peach-500 text-white rounded-full hover:bg-peach-600"
-              >
-                Sign In
-              </button>
+            ):(
+              <button onClick={()=>go("auth")} className="nb-signin px-4 sm:px-5 py-1.5 sm:py-2 text-white rounded-full text-xs sm:text-sm font-black" style={{background:"linear-gradient(135deg,#f97316,#ec4899)"}}>Sign In</button>
             )}
-
-            {/* Cart */}
-            <button
-              onClick={() => navigateAndClose("cart")}
-              className="relative p-2 rounded-full hover:bg-peach-100 dark:hover:bg-gray-800"
-            >
-              <ShoppingCart size={18} />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-peach-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
+            <button onClick={()=>go("cart")} className="nb-icon-btn relative p-2 rounded-full hover:bg-orange-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300">
+              <ShoppingCart size={16} className="sm:w-[18px] sm:h-[18px]"/>
+              {cartCount>0&&<span className="nb-cart-count absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full text-white text-xs font-black flex items-center justify-center" style={{background:"linear-gradient(135deg,#f97316,#ec4899)",fontSize:"10px"}}>{cartCount}</span>}
             </button>
-
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-full hover:bg-peach-100 dark:hover:bg-gray-800"
-            >
-              {mobileMenuOpen ? <X /> : <Menu />}
+            <button onClick={()=>setMobileOpen(!mobileOpen)} className="md:hidden nb-icon-btn p-2 rounded-full hover:bg-orange-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300">
+              {mobileOpen?<X size={18}/>:<Menu size={18}/>}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-white dark:bg-gray-900 border-t">
-          <div className="px-4 py-4 space-y-3">
-            {navLinks.map((link) => (
-              <button
-                key={link.page}
-                onClick={() => navigateAndClose(link.page)}
-                className="block w-full text-left px-4 py-2 rounded-lg hover:bg-peach-50 dark:hover:bg-gray-800"
-              >
+      {/* Mobile menu */}
+      {mobileOpen&&(
+        <div className="md:hidden nb-mobile bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-t border-orange-100 dark:border-gray-700 max-h-[calc(100vh-3.5rem)] overflow-y-auto">
+          <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-1">
+            {navLinks.map(link=>(
+              <button key={link.page} onClick={()=>go(link.page)}
+                className={`nb-mobile-item block w-full text-left px-4 py-3 rounded-xl font-bold text-sm ${currentPage===link.page?"text-orange-500 bg-orange-50":"text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-800"}`}>
                 {link.name}
               </button>
             ))}
-
-            {/* Admin Dashboard (mobile) */}
-            {user && isAdmin && (
-              <button
-                onClick={() => navigateAndClose("admin")}
-                className="block w-full text-left px-4 py-2 rounded-lg hover:bg-peach-50 dark:hover:bg-gray-800"
-              >
-                Dashboard
+            {user&&isAdmin&&<button onClick={()=>go("admin")} className="nb-mobile-item block w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-800 flex items-center gap-2"><LayoutDashboard size={15}/>Dashboard</button>}
+            {user&&(
+              <button onClick={()=>go("orders")} className="nb-mobile-item block w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-800">
+                My Orders
+              </button>
+            )}
+            {user&&<button onClick={handleSignOut} className="nb-mobile-item block w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-red-500 hover:bg-red-50 flex items-center gap-2"><LogOut size={15}/>Sign Out</button>}
+            {!user&&(
+              <button onClick={()=>go("auth")} className="nb-mobile-item block w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-orange-500 hover:bg-orange-50">
+                Sign In
               </button>
             )}
           </div>
