@@ -114,7 +114,6 @@ function useTilt(str = 8) {
   return ref;
 }
 
-// ✅ Fixed: a and d are now used to compute tx/ty for outward burst direction
 function spawnParticles(x: number, y: number) {
   const colors = ["#f97316", "#ec4899", "#fbbf24", "#84cc16"];
   for (let i = 0; i < 12; i++) {
@@ -132,7 +131,7 @@ function spawnParticles(x: number, y: number) {
 
 const ProductCard: React.FC<{
   product: Product;
-  onAdd: (p: Product) => void; // ✅ Fixed: removed unused `e` param from signature
+  onAdd: (p: Product) => void;
   delay: number;
 }> = ({ product, onAdd, delay }) => {
   const tilt = useTilt(7);
@@ -201,8 +200,9 @@ const ProductCard: React.FC<{
             <span className="ml-1.5 text-xs text-gray-400">(50+)</span>
           </div>
           <div className="flex justify-between items-center mb-3 sm:mb-4">
+            {/* ✅ Fixed: $ → ₦ */}
             <span className="text-lg sm:text-xl font-black ab-shimmer">
-              ${parseFloat(product.unit_price).toFixed(2)}
+              ₦{parseFloat(product.unit_price).toFixed(2)}
             </span>
             <span className="text-xs text-gray-400">
               {product.quantity} in stock
@@ -244,7 +244,6 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
     );
   }, [cat, products]);
 
-  // ✅ Fixed: signature matches updated ProductCard onAdd prop (no `e` param)
   const addCart = (product: Product) => {
     if (!getAccessToken()) {
       toast.error("Please log in to add items to your cart.", {

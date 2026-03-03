@@ -18,6 +18,7 @@ import { Checkout } from "./pages/Checkout";
 import { Orders } from "./pages/Orders";
 import { Shipping } from "./pages/Shipping";
 import { Returns } from "./pages/Returns";
+import { PrivacyPolicy } from "./pages/Privacypolicy";
 import { FAQ } from "./pages/FAQ";
 import { AdminDashboard } from "./pages/admin/Dashboard";
 
@@ -83,6 +84,8 @@ const AppContent = () => {
         return <Shipping />;
       case "returns":
         return <Returns />;
+      case "privacy":
+        return <PrivacyPolicy onNavigate={setCurrentPage} />;
       case "faq":
         return <FAQ />;
       default:

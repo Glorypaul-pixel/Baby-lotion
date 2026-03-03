@@ -916,7 +916,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                               WebkitTextFillColor: "transparent",
                             }}
                           >
-                            ${parseFloat(product.unit_price).toFixed(2)}
+                            ₦{parseFloat(product.unit_price)}
                           </span>
                           <div className="flex">
                             {[...Array(5)].map((_, i) => (
