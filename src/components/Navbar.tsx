@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { ShoppingCart, Menu, X, User, LogOut, Baby, LayoutDashboard } from "lucide-react";
+import { ShoppingCart, Sun, Moon, Menu, X, User, LogOut, Baby, LayoutDashboard } from "lucide-react";
+import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useCart } from "../contexts/CartContext";
 
 const STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap');
   @keyframes badgePop{0%{transform:scale(0) rotate(-20deg);opacity:0;}70%{transform:scale(1.2) rotate(5deg);}85%{transform:scale(.95) rotate(-2deg);}100%{transform:scale(1) rotate(0);opacity:1;}}
   @keyframes floatY{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
   @keyframes mobileIn{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:translateY(0);}}
@@ -35,6 +37,7 @@ type NavbarProps={onNavigate:(page:string)=>void;currentPage:string};
 
 export const Navbar:React.FC<NavbarProps>=({onNavigate,currentPage})=>{
   useStyles();
+  const{theme,toggleTheme}=useTheme();
   const{user,isAdmin,signOut}=useAuth();
   const{cartCount}=useCart();
   const[mobileOpen,setMobileOpen]=useState(false);
@@ -42,34 +45,20 @@ export const Navbar:React.FC<NavbarProps>=({onNavigate,currentPage})=>{
   const[scrolled,setScrolled]=useState(false);
   useEffect(()=>{const fn=()=>setScrolled(window.scrollY>10);window.addEventListener("scroll",fn);return()=>window.removeEventListener("scroll",fn);},[]);
 
-  // Close menus when clicking outside
-  useEffect(()=>{
-    if(!authMenu)return;
-    const fn=(e:MouseEvent)=>{
-      const t=e.target as HTMLElement;
-      if(!t.closest("[data-auth-menu]"))setAuthMenu(false);
-    };
-    document.addEventListener("mousedown",fn);
-    return()=>document.removeEventListener("mousedown",fn);
-  },[authMenu]);
-
   const navLinks=[{name:"Home",page:"home"},{name:"Products",page:"products"},{name:"About",page:"about"},{name:"Blog",page:"blog"},{name:"Contact",page:"contact"}];
   const go=(page:string)=>{onNavigate(page);setAuthMenu(false);setMobileOpen(false);};
   const handleSignOut=async()=>{await signOut();go("home");};
 
   return(
-    <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 "
+    <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
       style={{background:scrolled?"rgba(255,255,255,.92)":"rgba(255,255,255,.75)",backdropFilter:"blur(20px)",borderBottom:scrolled?"1px solid rgba(249,115,22,.15)":"1px solid transparent",boxShadow:scrolled?"0 4px 32px rgba(249,115,22,.08)":"none",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-14 sm:h-16">
-          {/* Logo */}
-          <div className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group" onClick={()=>go("home")}>
-            <div className="nb-logo-icon w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center" style={{background:"linear-gradient(135deg,#f97316,#ec4899)"}}><Baby className="w-4 h-4 sm:w-5 sm:h-5 text-white"/></div>
-            <span className="text-lg sm:text-xl font-black ab-shimmer" style={{fontFamily:"Syne,sans-serif"}}>Preferrable</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center gap-2.5 cursor-pointer group" onClick={()=>go("home")}>
+            <div className="nb-logo-icon w-10 h-10 rounded-full flex items-center justify-center" style={{background:"linear-gradient(135deg,#f97316,#ec4899)"}}><Baby className="w-5 h-5 text-white"/></div>
+            <span className="text-xl font-black ab-shimmer" style={{fontFamily:"'Nunito', sans-serif"}}>Preferrable</span>
           </div>
-
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-6 lg:gap-8">
+          <div className="hidden md:flex items-center gap-8">
             {navLinks.map(link=>(
               <button key={link.page} onClick={()=>go(link.page)}
                 className={`nb-link text-sm font-bold transition-colors ${currentPage===link.page?"text-orange-500 active":"text-gray-700 dark:text-gray-300 hover:text-orange-500"}`}>
@@ -77,14 +66,15 @@ export const Navbar:React.FC<NavbarProps>=({onNavigate,currentPage})=>{
               </button>
             ))}
           </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-2">
+            <button onClick={toggleTheme} className="nb-icon-btn p-2 rounded-full hover:bg-orange-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300">
+              {theme==="light"?<Moon size={18}/>:<Sun size={18}/>}
+            </button>
             {user?(
-              <div className="relative" data-auth-menu>
-                <button onClick={()=>setAuthMenu(!authMenu)} className="nb-icon-btn p-2 rounded-full hover:bg-orange-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"><User size={16} className="sm:w-[18px] sm:h-[18px]"/></button>
+              <div className="relative">
+                <button onClick={()=>setAuthMenu(!authMenu)} className="nb-icon-btn p-2 rounded-full hover:bg-orange-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"><User size={18}/></button>
                 {authMenu&&(
-                  <div className="nb-dropdown absolute right-0 mt-2 w-48 sm:w-52 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl py-2 overflow-hidden" style={{border:"1px solid rgba(249,115,22,.15)"}}>
+                  <div className="nb-dropdown absolute right-0 mt-2 w-52 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl py-2 overflow-hidden" style={{border:"1px solid rgba(249,115,22,.15)"}}>
                     <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700 mb-1">
                       <p className="text-xs font-black text-gray-400 uppercase tracking-widest">My Account</p>
                     </div>
@@ -97,23 +87,21 @@ export const Navbar:React.FC<NavbarProps>=({onNavigate,currentPage})=>{
                 )}
               </div>
             ):(
-              <button onClick={()=>go("auth")} className="nb-signin px-4 sm:px-5 py-1.5 sm:py-2 text-white rounded-full text-xs sm:text-sm font-black" style={{background:"linear-gradient(135deg,#f97316,#ec4899)"}}>Sign In</button>
+              <button onClick={()=>go("auth")} className="nb-signin px-5 py-2 text-white rounded-full text-sm font-black" style={{background:"linear-gradient(135deg,#f97316,#ec4899)"}}>Sign In</button>
             )}
             <button onClick={()=>go("cart")} className="nb-icon-btn relative p-2 rounded-full hover:bg-orange-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300">
-              <ShoppingCart size={16} className="sm:w-[18px] sm:h-[18px]"/>
-              {cartCount>0&&<span className="nb-cart-count absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full text-white text-xs font-black flex items-center justify-center" style={{background:"linear-gradient(135deg,#f97316,#ec4899)",fontSize:"10px"}}>{cartCount}</span>}
+              <ShoppingCart size={18}/>
+              {cartCount>0&&<span className="nb-cart-count absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-xs font-black flex items-center justify-center" style={{background:"linear-gradient(135deg,#f97316,#ec4899)"}}>{cartCount}</span>}
             </button>
             <button onClick={()=>setMobileOpen(!mobileOpen)} className="md:hidden nb-icon-btn p-2 rounded-full hover:bg-orange-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300">
-              {mobileOpen?<X size={18}/>:<Menu size={18}/>}
+              {mobileOpen?<X size={20}/>:<Menu size={20}/>}
             </button>
           </div>
         </div>
       </div>
-
-      {/* Mobile menu */}
       {mobileOpen&&(
-        <div className="md:hidden nb-mobile bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-t border-orange-100 dark:border-gray-700 max-h-[calc(100vh-3.5rem)] overflow-y-auto">
-          <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-1">
+        <div className="md:hidden nb-mobile bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-t border-orange-100 dark:border-gray-700">
+          <div className="px-4 py-4 space-y-1">
             {navLinks.map(link=>(
               <button key={link.page} onClick={()=>go(link.page)}
                 className={`nb-mobile-item block w-full text-left px-4 py-3 rounded-xl font-bold text-sm ${currentPage===link.page?"text-orange-500 bg-orange-50":"text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-800"}`}>
@@ -121,17 +109,7 @@ export const Navbar:React.FC<NavbarProps>=({onNavigate,currentPage})=>{
               </button>
             ))}
             {user&&isAdmin&&<button onClick={()=>go("admin")} className="nb-mobile-item block w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-800 flex items-center gap-2"><LayoutDashboard size={15}/>Dashboard</button>}
-            {user&&(
-              <button onClick={()=>go("orders")} className="nb-mobile-item block w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-800">
-                My Orders
-              </button>
-            )}
             {user&&<button onClick={handleSignOut} className="nb-mobile-item block w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-red-500 hover:bg-red-50 flex items-center gap-2"><LogOut size={15}/>Sign Out</button>}
-            {!user&&(
-              <button onClick={()=>go("auth")} className="nb-mobile-item block w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-orange-500 hover:bg-orange-50">
-                Sign In
-              </button>
-            )}
           </div>
         </div>
       )}

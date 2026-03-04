@@ -12,7 +12,9 @@ type BlogPost = {
   published: boolean;
 };
 
+// ── Shared animation styles ───────────────────────────────────────────────────
 const BLOG_STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap');
   @keyframes heroTitle {
     0%   { opacity:0; transform: perspective(800px) rotateX(90deg) translateY(-40px); filter: blur(16px); }
     60%  { filter: blur(0); }
@@ -32,6 +34,10 @@ const BLOG_STYLES = `
     50%      { border-radius: 50% 60% 30% 40% / 70% 30% 50% 60%; }
     75%      { border-radius: 40% 30% 60% 70% / 30% 70% 40% 50%; }
   }
+  @keyframes floatY {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-10px); }
+  }
   @keyframes badgePop {
     0%   { transform: scale(0) rotate(-20deg); opacity:0; }
     70%  { transform: scale(1.2) rotate(5deg); }
@@ -46,9 +52,17 @@ const BLOG_STYLES = `
     0%,100% { transform: translateY(0); }
     50%      { transform: translateY(-7px); }
   }
+  @keyframes orbitRing {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
   @keyframes pulseGlow {
     0%,100% { box-shadow: 0 0 20px rgba(249,115,22,0.3), 0 0 60px rgba(249,115,22,0.08); }
     50%      { box-shadow: 0 0 40px rgba(249,115,22,0.65), 0 0 100px rgba(249,115,22,0.2); }
+  }
+  @keyframes slideInLeft {
+    from { opacity:0; transform: translateX(-40px); }
+    to   { opacity:1; transform: translateX(0); }
   }
   @keyframes dotBounce {
     0%,100% { transform: translateY(0); opacity:.5; }
@@ -81,7 +95,6 @@ const BLOG_STYLES = `
   .dot-1 { animation: dotBounce .9s ease-in-out 0s infinite; }
   .dot-2 { animation: dotBounce .9s ease-in-out .15s infinite; }
   .dot-3 { animation: dotBounce .9s ease-in-out .3s infinite; }
-  @media(hover:none){.blog-blob{display:none;}}
 `;
 
 function useBlogStyles() {
@@ -119,6 +132,16 @@ const Reveal: React.FC<{ children: React.ReactNode; type?: "up"|"flip"|"left"; d
   );
 };
 
+const WaveText: React.FC<{ text: string; className?: string }> = ({ text, className="" }) => (
+  <span className={className}>
+    {text.split("").map((ch, i) => (
+      <span key={i} className="wave-char" style={{ animation:`waveText 1.6s ease-in-out ${i*75}ms infinite` }}>
+        {ch===" " ? "\u00A0" : ch}
+      </span>
+    ))}
+  </span>
+);
+
 function useTilt(strength = 8) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -139,6 +162,7 @@ function useTilt(strength = 8) {
   return ref;
 }
 
+// ── Single post view ──────────────────────────────────────────────────────────
 const PostView: React.FC<{ post: BlogPost; onBack: () => void }> = ({ post, onBack }) => {
   const [ready, setReady] = useState(false);
   const tiltRef = useTilt(5);
@@ -146,17 +170,17 @@ const PostView: React.FC<{ post: BlogPost; onBack: () => void }> = ({ post, onBa
 
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ fontFamily:"'Plus Jakarta Sans',sans-serif", background:"linear-gradient(135deg,#fff7ed 0%,#fce7f3 50%,#fef9c3 100%)" }}>
-      <div className="blog-blob w-72 h-72 bg-orange-300 opacity-20 top-[-60px] left-[-60px] hidden sm:block" style={{ animationDuration:"9s" }} />
-      <div className="blog-blob w-56 h-56 bg-pink-300 opacity-15 bottom-10 right-[-40px] hidden sm:block" style={{ animationDuration:"11s", animationDelay:"3s" }} />
+      <div className="blog-blob w-72 h-72 bg-orange-300 opacity-20 top-[-60px] left-[-60px]" style={{ animationDuration:"9s" }} />
+      <div className="blog-blob w-56 h-56 bg-pink-300 opacity-15 bottom-10 right-[-40px]" style={{ animationDuration:"11s", animationDelay:"3s" }} />
 
-      <div className="relative z-10 max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-12 sm:pb-16">
-        <div className={`blog-reveal-left ${ready?"on":""} mb-8 sm:mb-10`} style={{ transitionDelay:"0ms" }}>
+      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16">
+        <div className={`blog-reveal-left ${ready?"on":""} mb-10`} style={{ transitionDelay:"0ms" }}>
           <button
             onClick={onBack}
-            className="auth-submit inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full font-bold text-white text-sm sm:text-base"
+            className="auth-submit inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-white"
             style={{ background:"linear-gradient(135deg,#f97316,#ec4899)" }}
           >
-            <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <ArrowLeft className="w-4 h-4" />
             Back to Blog
           </button>
         </div>
@@ -166,26 +190,26 @@ const PostView: React.FC<{ post: BlogPost; onBack: () => void }> = ({ post, onBa
           className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-2xl"
           style={{ transformStyle:"preserve-3d", animation: ready ? "cardFlip .8s cubic-bezier(.22,.68,0,1.2) .1s both" : "none", opacity: ready ? undefined : 0 }}
         >
-          <div className="relative h-56 sm:h-80 md:h-96 overflow-hidden group">
+          <div className="relative h-96 overflow-hidden group">
             <div className="absolute inset-0 z-0" style={{ background:"linear-gradient(135deg,#f97316,#ec4899)", animation:"pulseGlow 3s ease-in-out infinite", filter:"blur(20px)", opacity:.35 }} />
             <img src={post.image_url} alt={post.title} className="img-zoom relative z-10 w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-20" />
           </div>
 
-          <div className="p-6 sm:p-8 md:p-12" style={{ transform:"translateZ(12px)" }}>
+          <div className="p-8 md:p-12" style={{ transform:"translateZ(12px)" }}>
             <Reveal>
-              <h1 className="text-2xl sm:text-4xl md:text-5xl font-black mb-3 sm:mb-4 text-gray-900 dark:text-white" style={{ fontFamily:"'Syne',sans-serif" }}>
+              <h1 className="text-4xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white" style={{ fontFamily:"'Nunito', sans-serif" }}>
                 {post.title}
               </h1>
             </Reveal>
             <Reveal delay={100}>
-              <div className="flex flex-wrap items-center gap-3 sm:gap-6 mb-6 sm:mb-8 text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-medium">
-                <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />{new Date(post.created_at).toLocaleDateString()}</span>
-                <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />Preferable Team</span>
+              <div className="flex items-center gap-6 mb-8 text-gray-500 dark:text-gray-400 text-sm font-medium">
+                <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" />{new Date(post.created_at).toLocaleDateString()}</span>
+                <span className="flex items-center gap-1.5"><User className="w-4 h-4" />Preferable Team</span>
               </div>
             </Reveal>
             <Reveal delay={200}>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-base sm:text-lg whitespace-pre-line">{post.content}</p>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg whitespace-pre-line">{post.content}</p>
             </Reveal>
           </div>
         </article>
@@ -194,6 +218,7 @@ const PostView: React.FC<{ post: BlogPost; onBack: () => void }> = ({ post, onBa
   );
 };
 
+// ── Blog list ─────────────────────────────────────────────────────────────────
 export const Blog: React.FC = () => {
   useBlogStyles();
   const [posts, setPosts]               = useState<BlogPost[]>([]);
@@ -204,7 +229,7 @@ export const Blog: React.FC = () => {
   useEffect(() => { const t = setTimeout(() => setReady(true), 60); return () => clearTimeout(t); }, []);
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetch = async () => {
       try {
         const mockPosts: BlogPost[] = [
           { id:1, title:"Caring for Newborn Skin",    excerpt:"Tips and tricks for keeping your baby's skin soft and healthy.",                                       content:"Your baby's skin is delicate and requires special care... (full article here).",                              image_url:"/images/baby.jpg",  created_at:new Date().toISOString(), published:true },
@@ -217,52 +242,52 @@ export const Blog: React.FC = () => {
       } catch { toast.error("Failed to load blog posts."); }
       finally  { setLoading(false); }
     };
-    fetchPosts();
+    fetch();
   }, []);
 
   if (selectedPost) return <PostView post={selectedPost} onBack={() => { setSelectedPost(null); }} />;
 
-  const tickerItems = ["✦ BABY CARE TIPS", "✦ NATURAL SKINCARE", "✦ BEDTIME ROUTINES", "✦ HEALTHY SKIN", "✦ EXPERT ADVICE", "✦ PARENTING GUIDE"];
+  const tickerItems = ["BABY CARE TIPS", "NATURAL SKINCARE", "BEDTIME ROUTINES", "HEALTHY SKIN", "EXPERT ADVICE", "PARENTING GUIDE"];
 
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ fontFamily:"'Plus Jakarta Sans',sans-serif", background:"linear-gradient(135deg,#fff7ed 0%,#fce7f3 50%,#fef9c3 100%)" }}>
-      <div className="blog-blob w-96 h-96 bg-orange-300 opacity-20 top-[-80px] left-[-80px] hidden sm:block" style={{ animationDuration:"9s" }} />
-      <div className="blog-blob w-64 h-64 bg-pink-300 opacity-15 bottom-20 right-[-40px] hidden sm:block" style={{ animationDuration:"11s", animationDelay:"3s" }} />
+      <div className="blog-blob w-96 h-96 bg-orange-300 opacity-20 top-[-80px] left-[-80px]" style={{ animationDuration:"9s" }} />
+      <div className="blog-blob w-64 h-64 bg-pink-300 opacity-15 bottom-20 right-[-40px]" style={{ animationDuration:"11s", animationDelay:"3s" }} />
 
       {/* Header */}
-      <section className="relative pt-24 sm:pt-28 pb-10 sm:pb-16 text-center z-10 px-4">
+      <section className="relative pt-28 pb-16 text-center z-10">
         <div
-          className="inline-block px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-white text-xs sm:text-sm font-black mb-4 sm:mb-6"
+          className="inline-block px-5 py-2.5 rounded-full text-white text-sm font-black mb-6"
           style={{ background:"linear-gradient(135deg,#f97316,#ec4899,#fbbf24)", animation: ready ? "badgePop .6s cubic-bezier(.22,.68,0,1.4) both" : "none", opacity: ready ? undefined : 0 }}
         >
-          ✦ OUR BLOG ✦
+          OUR BLOG
         </div>
         <h1
-          className="text-4xl sm:text-5xl md:text-7xl font-black mb-3 sm:mb-4 leading-tight"
-          style={{ fontFamily:"'Syne',sans-serif", animation: ready ? "heroTitle 1s cubic-bezier(.22,.68,0,1.2) .1s both" : "none", opacity: ready ? undefined : 0 }}
+          className="text-5xl md:text-7xl font-black mb-4 leading-tight"
+          style={{ fontFamily:"'Nunito', sans-serif", animation: ready ? "heroTitle 1s cubic-bezier(.22,.68,0,1.2) .1s both" : "none", opacity: ready ? undefined : 0 }}
         >
           <span className="ab-shimmer">Blog</span> &amp; Tips
         </h1>
-        <p className={`text-base sm:text-xl text-gray-600 dark:text-gray-400 blog-reveal-up ${ready?"on":""}`} style={{ transitionDelay:"350ms" }}>
+        <p className={`text-xl text-gray-600 dark:text-gray-400 blog-reveal-up ${ready?"on":""}`} style={{ transitionDelay:"350ms" }}>
           Expert advice and tips for caring for your little one
         </p>
       </section>
 
       {/* Ticker */}
-      <div className="blog-ticker-wrap py-2.5 sm:py-3 mb-8 sm:mb-12" style={{ background:"linear-gradient(90deg,#f97316,#ec4899)", borderTop:"2px solid #fbbf24", borderBottom:"2px solid #fbbf24" }}>
+      <div className="blog-ticker-wrap py-3 mb-12" style={{ background:"linear-gradient(90deg,#f97316,#ec4899)", borderTop:"2px solid #fbbf24", borderBottom:"2px solid #fbbf24" }}>
         <div className="blog-ticker-track">
           {[...tickerItems,...tickerItems].map((item,i) => (
-            <span key={i} className="text-white font-black text-xs sm:text-sm tracking-widest px-5 sm:px-8 flex-shrink-0">{item}</span>
+            <span key={i} className="text-white font-black text-sm tracking-widest px-8 flex-shrink-0">{item}</span>
           ))}
         </div>
       </div>
 
       {/* Cards */}
-      <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-16 sm:pb-24">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[...Array(3)].map((_,i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-lg h-64 sm:h-80 relative">
+              <div key={i} className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-lg h-80 relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent" style={{ animation:`shimmerSkeleton 1.6s ease ${i*.2}s infinite` }} />
                 <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-orange-300 dot-1" />
@@ -273,7 +298,7 @@ export const Blog: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {posts.map((post, index) => (
               <Reveal key={post.id} type="flip" delay={index * 130}>
                 <div
@@ -281,32 +306,33 @@ export const Blog: React.FC = () => {
                   style={{ transformStyle:"preserve-3d" }}
                   onClick={() => { toast.success(`Opening "${post.title}"`); setSelectedPost(post); }}
                 >
-                  <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-orange-200 opacity-0 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none hidden sm:block" style={{ animation:"morphBlob 5s ease infinite" }} />
+                  {/* Hover blob */}
+                  <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-orange-200 opacity-0 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none" style={{ animation:"morphBlob 5s ease infinite" }} />
 
-                  <div className="relative h-44 sm:h-52 overflow-hidden">
+                  <div className="relative h-52 overflow-hidden">
                     <img src={post.image_url} alt={post.title} className="img-zoom w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div
-                      className="absolute top-3 sm:top-4 left-3 sm:left-4 px-2.5 sm:px-3 py-1 rounded-full text-white text-xs font-black"
+                      className="absolute top-4 left-4 px-3 py-1 rounded-full text-white text-xs font-black"
                       style={{ background:"linear-gradient(135deg,#f97316,#ec4899)", animation:`badgePop .6s cubic-bezier(.22,.68,0,1.4) ${index*130+300}ms both` }}
                     >
-                      ✦ Article
+                      Article
                     </div>
                   </div>
 
-                  <div className="p-5 sm:p-6" style={{ transform:"translateZ(12px)" }}>
-                    <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-2 sm:mb-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">
-                      <span className="flex items-center gap-1.5"><Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5" />{new Date(post.created_at).toLocaleDateString()}</span>
-                      <span className="flex items-center gap-1.5"><User className="w-3 h-3 sm:w-3.5 sm:h-3.5" />Preferable</span>
+                  <div className="p-6" style={{ transform:"translateZ(12px)" }}>
+                    <div className="flex items-center gap-4 mb-3 text-sm text-gray-500 dark:text-gray-400 font-medium">
+                      <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" />{new Date(post.created_at).toLocaleDateString()}</span>
+                      <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" />Preferable</span>
                     </div>
-                    <h3 className="text-lg sm:text-xl font-black text-gray-900 dark:text-white mb-2 line-clamp-2" style={{ fontFamily:"'Syne',sans-serif" }}>{post.title}</h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 sm:mb-5 line-clamp-3 text-xs sm:text-sm leading-relaxed">{post.excerpt}</p>
+                    <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2 line-clamp-2" style={{ fontFamily:"'Nunito', sans-serif" }}>{post.title}</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-5 line-clamp-3 text-sm leading-relaxed">{post.excerpt}</p>
                     <div
-                      className="inline-flex items-center gap-2 font-black text-xs sm:text-sm transition-all duration-300 group-hover:gap-3"
+                      className="inline-flex items-center gap-2 font-black text-sm transition-all duration-300 group-hover:gap-3"
                       style={{ color:"#f97316" }}
                     >
                       <span>Read More</span>
-                      <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <ArrowRight className="w-4 h-4" />
                     </div>
                   </div>
                 </div>

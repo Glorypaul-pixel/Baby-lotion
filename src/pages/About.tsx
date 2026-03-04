@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Heart, Leaf, Award, Users } from "lucide-react";
 
+// ── useInView hook ────────────────────────────────────────────────────────────
 function useInView(threshold = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -16,7 +17,9 @@ function useInView(threshold = 0.12) {
   return { ref, visible };
 }
 
+// ── Inject styles (reuses pref-extreme-styles if Home already loaded them) ───
 const ABOUT_STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap');
   @keyframes heroTitle {
     0%   { opacity:0; transform: perspective(800px) rotateX(90deg) translateY(-60px); filter: blur(20px); }
     60%  { filter: blur(0); }
@@ -59,6 +62,10 @@ const ABOUT_STYLES = `
     0%,100% { transform: translateY(0); }
     50%      { transform: translateY(-7px); }
   }
+  @keyframes shimmerBg {
+    0%   { background-position: -400% 0; }
+    100% { background-position:  400% 0; }
+  }
   @keyframes iconDance {
     0%,100% { transform: rotate(0)    scale(1); }
     25%      { transform: rotate(15deg) scale(1.1); }
@@ -69,8 +76,21 @@ const ABOUT_STYLES = `
     0%,100% { transform: scale(1);   opacity: 0.7; }
     50%      { transform: scale(1.6); opacity: 1; }
   }
-  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes slideInLeft {
+    from { opacity:0; transform: translateX(-48px); }
+    to   { opacity:1; transform: translateX(0); }
+  }
+  @keyframes slideInRight {
+    from { opacity:0; transform: translateX(48px); }
+    to   { opacity:1; transform: translateX(0); }
+  }
+  @keyframes gradientRotate {
+    0%   { background-position: 0%   50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0%   50%; }
+  }
 
+  /* Reveal states */
   .ab-reveal-up    { opacity:0; transform: translateY(36px); transition: opacity 0.65s ease, transform 0.65s cubic-bezier(.22,.68,0,1.2); }
   .ab-reveal-up.on { opacity:1; transform: translateY(0); }
   .ab-reveal-flip      { opacity:0; }
@@ -79,17 +99,42 @@ const ABOUT_STYLES = `
   .ab-reveal-left.on   { opacity:1; transform: translateX(0); }
   .ab-reveal-right     { opacity:0; transform: translateX(40px); transition: opacity 0.65s ease, transform 0.65s cubic-bezier(.22,.68,0,1.2); }
   .ab-reveal-right.on  { opacity:1; transform: translateX(0); }
-  .ab-blob { position: absolute; pointer-events: none; animation: morphBlob 9s ease-in-out infinite; filter: blur(2px); }
-  .ab-shimmer { background: linear-gradient(135deg, #f97316 0%, #ec4899 50%, #fbbf24 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  /* Blobs */
+  .ab-blob {
+    position: absolute; pointer-events: none;
+    animation: morphBlob 9s ease-in-out infinite;
+    filter: blur(2px);
+  }
+
+  /* Shimmer text (static gradient, no animation) */
+  .ab-shimmer {
+    background: linear-gradient(135deg, #f97316 0%, #ec4899 50%, #fbbf24 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Icon box hover */
   .ab-icon-box { transition: transform 0.3s cubic-bezier(.22,.68,0,1.2); }
   .ab-card:hover .ab-icon-box { animation: iconDance 0.6s ease both; }
-  .ab-card { transition: transform 0.35s cubic-bezier(.22,.68,0,1.2), box-shadow 0.35s ease; }
+
+  /* Card hover */
+  .ab-card {
+    transition: transform 0.35s cubic-bezier(.22,.68,0,1.2), box-shadow 0.35s ease;
+  }
   .ab-card:hover { transform: translateY(-10px) scale(1.02); }
+
+  /* Promise dot */
   .ab-dot { animation: dotPulse 2s ease-in-out infinite; }
+
+  /* Ticker */
+  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   .ab-ticker-track { animation: ticker 22s linear infinite; display:flex; width:max-content; }
   .ab-ticker-wrap  { overflow: hidden; }
+
+  /* Wave text chars */
   .ab-wave-char { display:inline-block; }
-  @media(hover:none){.ab-blob{display:none;}}
 `;
 
 function useAboutStyles() {
@@ -102,6 +147,7 @@ function useAboutStyles() {
   }, []);
 }
 
+// ── Animated wrapper ──────────────────────────────────────────────────────────
 const Reveal: React.FC<{
   children: React.ReactNode;
   type?: "up" | "flip" | "left" | "right";
@@ -121,16 +167,22 @@ const Reveal: React.FC<{
   );
 };
 
+// ── Wave text ─────────────────────────────────────────────────────────────────
 const WaveText: React.FC<{ text: string; className?: string }> = ({ text, className = "" }) => (
   <span className={className}>
     {text.split("").map((ch, i) => (
-      <span key={i} className="ab-wave-char" style={{ animation: `waveText 1.6s ease-in-out ${i * 70}ms infinite` }}>
+      <span
+        key={i}
+        className="ab-wave-char"
+        style={{ animation: `waveText 1.6s ease-in-out ${i * 70}ms infinite` }}
+      >
         {ch === " " ? "\u00A0" : ch}
       </span>
     ))}
   </span>
 );
 
+// ── 3D tilt ───────────────────────────────────────────────────────────────────
 function useTilt(strength = 10) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -151,6 +203,7 @@ function useTilt(strength = 10) {
   return ref;
 }
 
+// ── Main component ────────────────────────────────────────────────────────────
 export const About: React.FC = () => {
   useAboutStyles();
 
@@ -164,7 +217,7 @@ export const About: React.FC = () => {
   const tiltCard3 = useTilt(8);
   const tiltRefs  = [tiltCard0, tiltCard1, tiltCard2, tiltCard3];
 
-  const tickerItems = ["✦ MADE WITH LOVE", "✦ 100% NATURAL", "✦ AWARD WINNING", "✦ 50K+ FAMILIES", "✦ DERMATOLOGIST TESTED", "✦ ECO-FRIENDLY", "✦ PARABEN FREE"];
+  const tickerItems = ["MADE WITH LOVE", "100% NATURAL", "AWARD WINNING", "50K+ FAMILIES", "DERMATOLOGIST TESTED", "ECO-FRIENDLY", "PARABEN FREE"];
 
   const values = [
     { icon: Heart, title: "Made with Love",  description: "Every product is crafted with genuine care and attention to detail", color: "#ec4899", bg: "from-pink-400 to-orange-400" },
@@ -183,32 +236,33 @@ export const About: React.FC = () => {
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
 
-      {/* HERO */}
-      <section className="relative pt-24 sm:pt-28 pb-14 sm:pb-20 overflow-hidden" style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fce7f3 50%, #fef9c3 100%)" }}>
-        <div className="ab-blob w-80 h-80 bg-orange-300 opacity-20 top-[-60px] left-[-60px] hidden sm:block" style={{ animationDuration: "9s" }} />
-        <div className="ab-blob w-56 h-56 bg-pink-300 opacity-15 bottom-[-30px] right-[-30px] hidden sm:block" style={{ animationDuration: "11s", animationDelay: "3s" }} />
+      {/* ── HERO HEADER ── */}
+      <section className="relative pt-28 pb-20 overflow-hidden" style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fce7f3 50%, #fef9c3 100%)" }}>
+        {/* Morphing blobs */}
+        <div className="ab-blob w-80 h-80 bg-orange-300 opacity-20 top-[-60px] left-[-60px]" style={{ animationDuration: "9s" }} />
+        <div className="ab-blob w-56 h-56 bg-pink-300 opacity-15 bottom-[-30px] right-[-30px]" style={{ animationDuration: "11s", animationDelay: "3s" }} />
 
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div
-            className={`inline-block px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-white text-xs sm:text-sm font-black mb-4 sm:mb-6 transition-all duration-700 ${ready ? "opacity-100" : "opacity-0"}`}
+            className={`inline-block px-5 py-2.5 rounded-full text-white text-sm font-black mb-6 transition-all duration-700 ${ready ? "opacity-100" : "opacity-0"}`}
             style={{ background: "linear-gradient(135deg, #f97316, #ec4899, #fbbf24)", animation: ready ? "badgePop 0.6s cubic-bezier(.22,.68,0,1.4) both" : "none" }}
           >
-            ✦ OUR STORY ✦
+            OUR STORY
           </div>
 
           <h1
-            className="text-4xl sm:text-5xl md:text-7xl font-black mb-4 sm:mb-6 leading-tight"
+            className="text-5xl md:text-7xl font-black mb-6 leading-tight"
             style={{
-              fontFamily: "'Syne', sans-serif",
+              fontFamily: "'Nunito', sans-serif",
               animation: ready ? "heroTitle 1s cubic-bezier(.22,.68,0,1.2) 0.1s both" : "none",
               opacity: ready ? undefined : 0,
             }}
           >
-            <span className="ab-shimmer">About Preferrable</span>
+            <span className="ab-shimmer">About Preferable</span>
           </h1>
 
           <p
-            className={`text-base sm:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed ab-reveal-up ${ready ? "on" : ""}`}
+            className={`text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed ab-reveal-up ${ready ? "on" : ""}`}
             style={{ transitionDelay: "400ms" }}
           >
             We believe every baby deserves the gentlest care. That's why we create
@@ -217,45 +271,53 @@ export const About: React.FC = () => {
         </div>
       </section>
 
-      {/* TICKER */}
-      <div className="ab-ticker-wrap py-2.5 sm:py-3" style={{ background: "linear-gradient(90deg, #f97316, #ec4899)", borderTop: "2px solid #fbbf24", borderBottom: "2px solid #fbbf24" }}>
+      {/* ── TICKER ── */}
+      <div className="ab-ticker-wrap py-3" style={{ background: "linear-gradient(90deg, #f97316, #ec4899)", borderTop: "2px solid #fbbf24", borderBottom: "2px solid #fbbf24" }}>
         <div className="ab-ticker-track">
           {[...tickerItems, ...tickerItems].map((item, i) => (
-            <span key={i} className="text-white font-black text-xs sm:text-sm tracking-widest px-5 sm:px-8 flex-shrink-0">{item}</span>
+            <span key={i} className="text-white font-black text-sm tracking-widest px-8 flex-shrink-0">{item}</span>
           ))}
         </div>
       </div>
 
-      {/* STORY */}
-      <section className="py-16 sm:py-24 bg-white dark:bg-gray-900 relative overflow-hidden">
-        <div className="ab-blob w-64 h-64 bg-orange-200 opacity-15 top-10 right-10 hidden sm:block" style={{ animationDuration: "10s" }} />
+      {/* ── STORY SECTION ── */}
+      <section className="py-24 bg-white dark:bg-gray-900 relative overflow-hidden">
+        <div className="ab-blob w-64 h-64 bg-orange-200 opacity-15 top-10 right-10" style={{ animationDuration: "10s" }} />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
             {/* Image */}
             <Reveal type="left">
               <div
                 ref={tiltImg}
-                className="relative h-64 sm:h-80 lg:h-[420px] rounded-3xl overflow-hidden"
+                className="relative h-[420px] rounded-3xl overflow-hidden"
                 style={{ transformStyle: "preserve-3d" }}
               >
+                {/* Orbit rings */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-                  <div className="absolute w-[108%] h-[108%] rounded-full border-2 border-dashed border-orange-300/40 hidden sm:block" style={{ animation: "orbitRing 14s linear infinite" }} />
-                  <div className="absolute w-[116%] h-[116%] rounded-full border border-dotted border-pink-300/30 hidden sm:block" style={{ animation: "orbitRingReverse 20s linear infinite" }} />
+                  <div className="absolute w-[108%] h-[108%] rounded-full border-2 border-dashed border-orange-300/40" style={{ animation: "orbitRing 14s linear infinite" }} />
+                  <div className="absolute w-[116%] h-[116%] rounded-full border border-dotted border-pink-300/30" style={{ animation: "orbitRingReverse 20s linear infinite" }} />
                 </div>
+
+                {/* Glow behind */}
                 <div className="absolute inset-4 rounded-3xl z-0" style={{ background: "linear-gradient(135deg, #f97316, #ec4899)", animation: "pulseGlow 3s ease-in-out infinite", filter: "blur(20px)", opacity: 0.35 }} />
+
                 <div className="relative z-10 w-full h-full rounded-3xl overflow-hidden" style={{ animation: "floatY 5s ease-in-out infinite" }}>
-                  <img src="/images/aboutImg.png" alt="Baby care" className="w-full h-full object-cover transition-transform duration-700 hover:scale-110" />
+                  <img
+                    src="/images/aboutImg.png"
+                    alt="Baby care"
+                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-108"
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                 </div>
               </div>
             </Reveal>
 
             {/* Copy */}
-            <div className="flex flex-col justify-center space-y-4 sm:space-y-5">
+            <div className="flex flex-col justify-center space-y-5">
               <Reveal type="right" delay={0}>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 dark:text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
+                <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white" style={{ fontFamily: "'Nunito', sans-serif" }}>
                   Our <span className="ab-shimmer">Story</span>
                 </h2>
               </Reveal>
@@ -265,7 +327,7 @@ export const About: React.FC = () => {
                 "Today, thousands of families trust Preferrable to care for their little ones, and we're honored to be part of your family's journey.",
               ].map((para, i) => (
                 <Reveal key={i} type="right" delay={i * 130 + 100}>
-                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">{para}</p>
+                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{para}</p>
                 </Reveal>
               ))}
             </div>
@@ -273,32 +335,46 @@ export const About: React.FC = () => {
         </div>
       </section>
 
-      {/* VALUES */}
-      <section className="py-16 sm:py-24 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fce7f3 60%, #fef9c3 100%)" }}>
-        <div className="ab-blob w-72 h-72 bg-pink-300 opacity-15 bottom-0 left-0 hidden sm:block" style={{ animationDuration: "8s", animationDelay: "1s" }} />
+      {/* ── VALUES CARDS ── */}
+      <section className="py-24 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fce7f3 60%, #fef9c3 100%)" }}>
+        <div className="ab-blob w-72 h-72 bg-pink-300 opacity-15 bottom-0 left-0" style={{ animationDuration: "8s", animationDelay: "1s" }} />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <Reveal className="text-center mb-10 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-3 sm:mb-4 text-gray-900 dark:text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
+          <Reveal className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white" style={{ fontFamily: "'Nunito', sans-serif" }}>
               <WaveText text="What We Stand For" />
             </h2>
-            <p className="text-base sm:text-xl text-gray-500">The values behind every product we make</p>
+            <p className="text-xl text-gray-500">The values behind every product we make</p>
           </Reveal>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {values.map((v, i) => (
               <Reveal key={i} type="flip" delay={i * 130}>
                 <div
                   ref={tiltRefs[i]}
-                  className="ab-card group p-6 sm:p-8 rounded-3xl bg-white dark:bg-gray-800 shadow-lg overflow-hidden relative"
+                  className="ab-card group p-8 rounded-3xl bg-white dark:bg-gray-800 shadow-lg overflow-hidden relative"
                   style={{ transformStyle: "preserve-3d" }}
                 >
-                  <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-0 group-hover:opacity-10 transition-opacity duration-500 hidden sm:block" style={{ background: v.color, animation: "morphBlob 5s ease infinite" }} />
-                  <div className={`ab-icon-box w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br ${v.bg} rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-5 relative z-10`}>
-                    <v.icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                  {/* Blob on hover */}
+                  <div
+                    className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-0 group-hover:opacity-10 transition-opacity duration-500"
+                    style={{ background: v.color, animation: "morphBlob 5s ease infinite" }}
+                  />
+
+                  <div
+                    className={`ab-icon-box w-16 h-16 bg-gradient-to-br ${v.bg} rounded-2xl flex items-center justify-center mb-5 relative z-10`}
+                  >
+                    <v.icon className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-lg sm:text-xl font-black text-gray-900 dark:text-white mb-2 relative z-10" style={{ fontFamily: "'Syne', sans-serif" }}>{v.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm relative z-10 leading-relaxed">{v.description}</p>
+                  <h3
+                    className="text-xl font-black text-gray-900 dark:text-white mb-2 relative z-10"
+                    style={{ fontFamily: "'Nunito', sans-serif" }}
+                  >
+                    {v.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm relative z-10 leading-relaxed">
+                    {v.description}
+                  </p>
                 </div>
               </Reveal>
             ))}
@@ -306,34 +382,37 @@ export const About: React.FC = () => {
         </div>
       </section>
 
-      {/* PROMISE */}
-      <section className="py-16 sm:py-24 bg-white dark:bg-gray-900 relative overflow-hidden">
-        <div className="ab-blob w-56 h-56 bg-yellow-300 opacity-10 top-10 right-20 hidden sm:block" style={{ animationDuration: "12s" }} />
+      {/* ── PROMISE SECTION ── */}
+      <section className="py-24 bg-white dark:bg-gray-900 relative overflow-hidden">
+        <div className="ab-blob w-56 h-56 bg-yellow-300 opacity-10 top-10 right-20" style={{ animationDuration: "12s" }} />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Reveal type="flip">
-            <div className="rounded-3xl p-8 sm:p-12 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fce7f3 50%, #fef9c3 100%)" }}>
-              <div className="ab-blob w-48 h-48 bg-orange-300 opacity-20 top-0 left-0 hidden sm:block" style={{ animationDuration: "8s" }} />
-              <div className="ab-blob w-36 h-36 bg-pink-300 opacity-15 bottom-0 right-0 hidden sm:block" style={{ animationDuration: "10s", animationDelay: "2s" }} />
+            <div className="rounded-3xl p-12 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fce7f3 50%, #fef9c3 100%)" }}>
+              <div className="ab-blob w-48 h-48 bg-orange-300 opacity-20 top-0 left-0" style={{ animationDuration: "8s" }} />
+              <div className="ab-blob w-36 h-36 bg-pink-300 opacity-15 bottom-0 right-0" style={{ animationDuration: "10s", animationDelay: "2s" }} />
 
               <div className="max-w-4xl mx-auto relative z-10">
-                <Reveal className="text-center mb-8 sm:mb-10">
-                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-2 text-gray-900 dark:text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
+                <Reveal className="text-center mb-10">
+                  <h2 className="text-4xl md:text-5xl font-black mb-2 text-gray-900 dark:text-white" style={{ fontFamily: "'Nunito', sans-serif" }}>
                     Our <span className="ab-shimmer">Promise</span>
                   </h2>
                 </Reveal>
 
-                <div className="space-y-4 sm:space-y-6">
+                <div className="space-y-6">
                   {promises.map((p, i) => (
                     <Reveal key={i} type={i % 2 === 0 ? "left" : "right"} delay={i * 120}>
                       <div
-                        className="group flex items-start gap-4 sm:gap-5 p-4 sm:p-5 rounded-2xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm"
+                        className="group flex items-start gap-5 p-5 rounded-2xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm"
                         style={{ transition: "transform 0.35s cubic-bezier(.22,.68,0,1.2), box-shadow 0.35s ease" }}
                         onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateX(8px) scale(1.01)"; (e.currentTarget as HTMLDivElement).style.boxShadow = `0 12px 32px ${p.color}33`; }}
                         onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ""; (e.currentTarget as HTMLDivElement).style.boxShadow = ""; }}
                       >
-                        <div className="ab-dot w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full flex-shrink-0 mt-1" style={{ background: p.color, animationDelay: `${i * 300}ms` }} />
-                        <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+                        <div
+                          className="ab-dot w-4 h-4 rounded-full flex-shrink-0 mt-1"
+                          style={{ background: p.color, animationDelay: `${i * 300}ms` }}
+                        />
+                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                           <strong className="font-black text-gray-900 dark:text-white">{p.label}: </strong>
                           {p.text}
                         </p>
