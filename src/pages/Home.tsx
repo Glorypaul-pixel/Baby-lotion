@@ -879,9 +879,6 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                           <Star
                             key={i}
                             className="w-4 h-4 text-yellow-400 fill-yellow-400"
-                            style={{
-                              animation: `waveText 1s ease ${i * 100}ms infinite`,
-                            }}
                           />
                         ))}
                       </div>
@@ -1025,16 +1022,13 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                               WebkitTextFillColor: "transparent",
                             }}
                           >
-                            ${parseFloat(product.unit_price).toFixed(2)}
+                            ₦{parseFloat(product.unit_price).toFixed(2)}
                           </span>
                           <div className="flex">
                             {[...Array(5)].map((_, i) => (
                               <Star
                                 key={i}
                                 className="w-4 h-4 fill-yellow-400 text-yellow-400"
-                                style={{
-                                  animation: `waveText 1.2s ease ${i * 100}ms infinite`,
-                                }}
                               />
                             ))}
                           </div>
@@ -1239,9 +1233,6 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                       <Star
                         key={i}
                         className="w-5 h-5 fill-yellow-400 text-yellow-400"
-                        style={{
-                          animation: `waveText 1.2s ease ${i * 80}ms infinite`,
-                        }}
                       />
                     ))}
                   </div>

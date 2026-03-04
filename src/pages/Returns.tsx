@@ -1,29 +1,45 @@
 import React, { useEffect, useRef, useState } from "react";
-import { RotateCcw, CheckCircle, XCircle, Clock } from "lucide-react";
+import {
+  RotateCcw,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Mail,
+  Phone,
+} from "lucide-react";
 
 const STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap');
   @keyframes heroTitle{0%{opacity:0;transform:perspective(800px) rotateX(90deg) translateY(-40px);filter:blur(16px);}60%{filter:blur(0);}100%{opacity:1;transform:perspective(800px) rotateX(0) translateY(0);}}
   @keyframes cardFlip{0%{transform:perspective(1000px) rotateY(-8deg) rotateX(4deg) scale(.92);opacity:0;}100%{transform:perspective(1000px) rotateY(0) rotateX(0) scale(1);opacity:1;}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
   @keyframes morphBlob{0%,100%{border-radius:60% 40% 30% 70%/60% 30% 70% 40%;}25%{border-radius:30% 60% 70% 40%/50% 60% 30% 60%;}50%{border-radius:50% 60% 30% 40%/70% 30% 50% 60%;}75%{border-radius:40% 30% 60% 70%/30% 70% 40% 50%;}}
   @keyframes badgePop{0%{transform:scale(0) rotate(-20deg);opacity:0;}70%{transform:scale(1.2) rotate(5deg);}85%{transform:scale(.95) rotate(-2deg);}100%{transform:scale(1) rotate(0);opacity:1;}}
+  @keyframes stepPop{0%{transform:scale(0) rotate(-10deg);opacity:0;}70%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
   @keyframes ticker{from{transform:translateX(0);}to{transform:translateX(-50%);}}
   @keyframes waveText{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
   @keyframes iconDance{0%,100%{transform:rotate(0) scale(1);}25%{transform:rotate(15deg) scale(1.1);}50%{transform:rotate(-5deg) scale(.95);}75%{transform:rotate(10deg) scale(1.05);}}
-  @keyframes rowSlide{from{opacity:0;transform:translateX(-20px);}to{opacity:1;transform:translateX(0);}}
   .rt-blob{position:absolute;pointer-events:none;animation:morphBlob 9s ease-in-out infinite;filter:blur(2px);}
-  .rt-shimmer{background:linear-gradient(135deg,#f97316 0%,#ec4899 50%,#fbbf24 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .ab-shimmer{background:linear-gradient(135deg,#f97316 0%,#ec4899 50%,#fbbf24 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
   .rt-up{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s cubic-bezier(.22,.68,0,1.2);}
   .rt-up.on{opacity:1;transform:translateY(0);}
+  .rt-left{opacity:0;transform:translateX(-32px);transition:opacity .6s ease,transform .6s cubic-bezier(.22,.68,0,1.2);}
+  .rt-left.on{opacity:1;transform:translateX(0);}
   .rt-flip{opacity:0;}
   .rt-flip.on{animation:cardFlip .65s cubic-bezier(.22,.68,0,1.2) both;}
   .rt-card{transition:transform .35s cubic-bezier(.22,.68,0,1.2),box-shadow .35s ease;}
   .rt-card:hover{transform:translateY(-6px) scale(1.01);}
   .rt-icon{transition:transform .3s ease;}
   .rt-card:hover .rt-icon{animation:iconDance .6s ease both;}
-  .rt-row{transition:transform .25s ease,box-shadow .25s ease;animation:rowSlide .5s ease both;}
-  .rt-row:hover{transform:translateX(5px);box-shadow:0 4px 16px rgba(249,115,22,.1);}
-  .tick-track-rt{animation:ticker 24s linear infinite;display:flex;width:max-content;}
-  .tick-wrap-rt{overflow:hidden;}
+  .step-row{transition:transform .25s ease,box-shadow .25s ease;}
+  .step-row:hover{transform:translateX(6px);box-shadow:0 4px 16px rgba(249,115,22,.1);}
+  .step-num{animation:stepPop .5s cubic-bezier(.22,.68,0,1.4) both;}
+  .cta-btn{transition:transform .2s ease;position:relative;overflow:hidden;display:inline-flex;align-items:center;}
+  .cta-btn:hover{transform:scale(1.05);}
+  .cta-btn::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.25) 50%,transparent 60%);transform:translateX(-100%);transition:transform .5s ease;}
+  .cta-btn:hover::after{transform:translateX(100%);}
+  .tick-track{animation:ticker 24s linear infinite;display:flex;width:max-content;}
+  .tick-wrap{overflow:hidden;}
   .wave-char{display:inline-block;}
 `;
 
@@ -36,7 +52,6 @@ function useStyles() {
     document.head.appendChild(s);
   }, []);
 }
-
 function useInView(t = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
   const [v, setV] = useState(false);
@@ -60,7 +75,7 @@ function useInView(t = 0.12) {
 
 type RevealProps = {
   children: React.ReactNode;
-  type?: "up" | "flip";
+  type?: "up" | "flip" | "left";
   delay?: number;
   className?: string;
 };
@@ -71,7 +86,7 @@ const Reveal: React.FC<RevealProps> = ({
   className = "",
 }) => {
   const { ref, v } = useInView();
-  const cls = type === "flip" ? "rt-flip" : "rt-up";
+  const cls = { up: "rt-up", flip: "rt-flip", left: "rt-left" }[type];
   return (
     <div
       ref={ref}
@@ -97,134 +112,66 @@ const WaveText: React.FC<{ text: string }> = ({ text }) => (
           display: "inline-block",
         }}
       >
-        {ch === " " ? "\u00A0" : ch}
+        {ch === " " ? " " : ch}
       </span>
     ))}
   </span>
 );
 
-const sections = [
+const steps = [
   {
-    icon: RotateCcw,
-    title: "Return Policy",
+    num: "1",
+    title: "Contact Us",
+    desc: "Email tsmglobalcosmetic or call (+234) 080-6703-0009 to initiate your return. We will provide a return authorization number.",
     color: "#f97316",
-    grad: "from-orange-400 to-pink-400",
-    content: (
-      <div className="space-y-3 text-sm sm:text-base text-gray-600 dark:text-gray-400">
-        <p>
-          We want you to be completely satisfied with your purchase. If you're
-          not happy with your order, we accept returns within{" "}
-          <strong className="text-gray-900 dark:text-white">30 days</strong> of
-          delivery.
-        </p>
-        <p>
-          Items must be unused, unopened, and in their original packaging to
-          qualify for a full refund.
-        </p>
-      </div>
-    ),
   },
   {
+    num: "2",
+    title: "Package Your Item",
+    desc: "Securely pack the item in its original packaging. Include your return authorization number and proof of purchase.",
+    color: "#ec4899",
+  },
+  {
+    num: "3",
+    title: "Ship It Back",
+    desc: "Ship the package to the address provided in your return authorization email. We recommend using a trackable shipping method.",
+    color: "#fbbf24",
+  },
+  {
+    num: "4",
+    title: "Get Your Refund",
+    desc: "Once we receive your return, we will process it within 5-7 business days. Your refund will be issued to your original payment method.",
+    color: "#84cc16",
+  },
+];
+const boxes = [
+  {
     icon: CheckCircle,
-    title: "Eligible Items",
+    title: "Returnable",
+    items: ["Unopened products", "Damaged items", "Wrong items sent"],
     color: "#22c55e",
-    grad: "from-green-400 to-emerald-500",
-    content: (
-      <div className="space-y-3">
-        {[
-          {
-            name: "Unopened Products",
-            desc: "Items in original, sealed packaging are fully eligible for return.",
-          },
-          {
-            name: "Damaged on Arrival",
-            desc: "If your item arrived damaged, contact us within 48 hours with photos.",
-          },
-          {
-            name: "Wrong Item Received",
-            desc: "We'll cover all return shipping costs if we made an error.",
-          },
-        ].map((opt, i) => (
-          <div
-            key={i}
-            className="rt-row p-3 sm:p-4 rounded-xl bg-green-50 dark:bg-gray-700/50"
-            style={{ animationDelay: `${i * 80 + 200}ms` }}
-          >
-            <h3
-              className="font-black text-gray-900 dark:text-white mb-1 text-sm sm:text-base"
-              style={{ fontFamily: "Syne,sans-serif" }}
-            >
-              {opt.name}
-            </h3>
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-              {opt.desc}
-            </p>
-          </div>
-        ))}
-      </div>
-    ),
+    border: "rgba(34,197,94,.3)",
+    bg: "rgba(34,197,94,.06)",
   },
   {
     icon: XCircle,
-    title: "Non-Eligible Items",
-    color: "#ec4899",
-    grad: "from-pink-400 to-rose-500",
-    content: (
-      <div className="space-y-3">
-        {[
-          {
-            name: "Opened / Used Products",
-            desc: "For hygiene reasons, opened skincare and body products cannot be returned.",
-          },
-          {
-            name: "Items Past 30 Days",
-            desc: "Returns requested after 30 days of delivery are not accepted.",
-          },
-          {
-            name: "Sale / Clearance Items",
-            desc: "Items purchased on sale or during promotions are final sale.",
-          },
-        ].map((opt, i) => (
-          <div
-            key={i}
-            className="rt-row p-3 sm:p-4 rounded-xl bg-pink-50 dark:bg-gray-700/50"
-            style={{ animationDelay: `${i * 80 + 200}ms` }}
-          >
-            <h3
-              className="font-black text-gray-900 dark:text-white mb-1 text-sm sm:text-base"
-              style={{ fontFamily: "Syne,sans-serif" }}
-            >
-              {opt.name}
-            </h3>
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-              {opt.desc}
-            </p>
-          </div>
-        ))}
-      </div>
-    ),
+    title: "Non-Returnable",
+    items: ["Opened products", "Items past 30 days", "Gift cards"],
+    color: "#ef4444",
+    border: "rgba(239,68,68,.3)",
+    bg: "rgba(239,68,68,.06)",
   },
   {
-    icon: Clock,
-    title: "Refund Process",
+    icon: AlertCircle,
+    title: "Important Notes",
+    items: [
+      "Free return shipping",
+      "Exchanges available",
+      "5-7 day processing",
+    ],
     color: "#3b82f6",
-    grad: "from-blue-400 to-blue-500",
-    content: (
-      <div className="space-y-3 text-sm sm:text-base text-gray-600 dark:text-gray-400">
-        <p>
-          Once we receive and inspect your return, we'll notify you via email.
-          Approved refunds are processed within{" "}
-          <strong className="text-gray-900 dark:text-white">
-            5–7 business days
-          </strong>{" "}
-          back to your original payment method.
-        </p>
-        <p>
-          Shipping costs are non-refundable unless the return is due to our
-          error.
-        </p>
-      </div>
-    ),
+    border: "rgba(59,130,246,.3)",
+    bg: "rgba(59,130,246,.06)",
   },
 ];
 
@@ -235,15 +182,13 @@ export const Returns: React.FC = () => {
     const t = setTimeout(() => setReady(true), 60);
     return () => clearTimeout(t);
   }, []);
-
   const ticks = [
-    "\u2726 RETURNS",
-    "\u2726 30-DAY POLICY",
-    "\u2726 EASY REFUNDS",
-    "\u2726 CUSTOMER CARE",
-    "\u2726 HASSLE FREE",
+    "RETURNS POLICY",
+    "30-DAY GUARANTEE",
+    "FREE RETURNS",
+    "EASY EXCHANGES",
+    "YOUR SATISFACTION",
   ];
-
   return (
     <div
       className="min-h-screen overflow-x-hidden relative"
@@ -253,14 +198,9 @@ export const Returns: React.FC = () => {
           "linear-gradient(135deg,#fff7ed 0%,#fce7f3 50%,#fef9c3 100%)",
       }}
     >
-      {/* Blobs */}
       <div
-        className="rt-blob hidden sm:block"
+        className="rt-blob w-80 h-80 bg-orange-300 opacity-20"
         style={{
-          width: "18rem",
-          height: "18rem",
-          background: "#fdba74",
-          opacity: 0.2,
           position: "absolute",
           top: "-60px",
           left: "-60px",
@@ -268,12 +208,8 @@ export const Returns: React.FC = () => {
         }}
       />
       <div
-        className="rt-blob hidden sm:block"
+        className="rt-blob w-60 h-60 bg-pink-300 opacity-15"
         style={{
-          width: "14rem",
-          height: "14rem",
-          background: "#f9a8d4",
-          opacity: 0.15,
           position: "absolute",
           bottom: "60px",
           right: "-40px",
@@ -281,11 +217,9 @@ export const Returns: React.FC = () => {
           animationDelay: "3s",
         }}
       />
-
-      {/* Hero */}
-      <section className="relative pt-24 sm:pt-28 pb-8 sm:pb-12 text-center z-10 px-4">
+      <section className="relative pt-28 pb-12 text-center z-10">
         <div
-          className="inline-block px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-white text-xs sm:text-sm font-black mb-4 sm:mb-6"
+          className="inline-block px-5 py-2.5 rounded-full text-white text-sm font-black mb-6"
           style={{
             background: "linear-gradient(135deg,#f97316,#ec4899,#fbbf24)",
             animation: ready
@@ -294,122 +228,247 @@ export const Returns: React.FC = () => {
             opacity: ready ? undefined : 0,
           }}
         >
-          HASSLE-FREE
+          CUSTOMER CARE
         </div>
         <h1
-          className="font-black mb-3 sm:mb-4 text-4xl sm:text-5xl md:text-7xl leading-tight"
+          className="text-5xl md:text-7xl font-black mb-4"
           style={{
-            fontFamily: "Syne,sans-serif",
+            fontFamily: "'Nunito', sans-serif",
             animation: ready
               ? "heroTitle 1s cubic-bezier(.22,.68,0,1.2) .1s both"
               : "none",
             opacity: ready ? undefined : 0,
           }}
         >
-          <span className="rt-shimmer">Returns</span> &amp; Refunds
+          <span className="ab-shimmer">Returns</span> &amp; Exchanges
         </h1>
         <p
-          className={`text-base sm:text-xl text-gray-600 rt-up ${ready ? "on" : ""}`}
+          className={`text-xl text-gray-600 rt-up ${ready ? "on" : ""}`}
           style={{ transitionDelay: "350ms" }}
         >
-          Simple, transparent, and stress-free
+          Your satisfaction is our priority
         </p>
       </section>
-
-      {/* Ticker */}
       <div
-        className="tick-wrap-rt py-2.5 sm:py-3 mb-10 sm:mb-14"
+        className="tick-wrap py-3 mb-14"
         style={{
           background: "linear-gradient(90deg,#f97316,#ec4899)",
           borderTop: "2px solid #fbbf24",
           borderBottom: "2px solid #fbbf24",
         }}
       >
-        <div className="tick-track-rt">
-          {[...ticks, ...ticks].map((t, idx) => (
+        <div className="tick-track">
+          {[...ticks, ...ticks].map((t, i) => (
             <span
-              key={idx}
-              className="text-white font-black text-xs sm:text-sm tracking-widest px-5 sm:px-8 flex-shrink-0"
+              key={i}
+              className="text-white font-black text-sm tracking-widest px-8 flex-shrink-0"
             >
               {t}
             </span>
           ))}
         </div>
       </div>
-
-      {/* Content */}
-      <div className="relative z-10 max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 pb-16 sm:pb-24 space-y-4 sm:space-y-6">
-        {sections.map((sec, i) => (
-          <Reveal key={i} type="flip" delay={i * 100}>
-            <div className="rt-card bg-white dark:bg-gray-800 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xl relative overflow-hidden">
+      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 space-y-8">
+        <Reveal type="flip">
+          <div className="rt-card bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-xl relative overflow-hidden">
+            <div
+              className="rt-blob w-32 h-32 bg-orange-200 opacity-20"
+              style={{
+                position: "absolute",
+                top: "-30px",
+                right: "-30px",
+                animationDuration: "7s",
+              }}
+            />
+            <div className="flex items-center gap-4 mb-6 relative z-10">
               <div
-                className="rt-blob"
+                className="rt-icon w-14 h-14 rounded-2xl flex items-center justify-center"
                 style={{
-                  width: "7rem",
-                  height: "7rem",
-                  position: "absolute",
-                  top: "-20px",
-                  right: "-20px",
-                  background: sec.color,
-                  opacity: 0.15,
-                  animationDuration: `${7 + i}s`,
+                  background: "linear-gradient(135deg,#f97316,#ec4899)",
                 }}
-              />
-              <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6 relative z-10">
-                <div
-                  className={`rt-icon w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${sec.grad}`}
-                >
-                  <sec.icon className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
-                </div>
-                <h2
-                  className="text-base sm:text-2xl font-black text-gray-900 dark:text-white"
-                  style={{ fontFamily: "Syne,sans-serif" }}
-                >
-                  {sec.title}
-                </h2>
+              >
+                <RotateCcw className="w-7 h-7 text-white" />
               </div>
-              <div className="relative z-10">{sec.content}</div>
+              <h2
+                className="text-2xl font-black text-gray-900 dark:text-white"
+                style={{ fontFamily: "'Nunito', sans-serif" }}
+              >
+                30-Day <span className="ab-shimmer">Return Policy</span>
+              </h2>
             </div>
-          </Reveal>
-        ))}
-
-        {/* CTA */}
-        <Reveal type="flip" delay={400}>
+            <div className="space-y-3 text-gray-600 dark:text-gray-400 relative z-10">
+              <p>
+                We want you to be completely satisfied with your purchase. If
+                you are not happy with your order, you can return it within 30
+                days of delivery for a full refund or exchange.
+              </p>
+              <p className="font-black text-gray-900 dark:text-white">
+                To be eligible for a return, items must be:
+              </p>
+              <ul className="space-y-2 ml-2">
+                {[
+                  "Unused and in the same condition that you received them",
+                  "In the original packaging",
+                  "Accompanied by proof of purchase",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span
+                      className="w-5 h-5 rounded-full flex-shrink-0 mt-0.5 flex items-center justify-center text-white text-xs font-black step-num"
+                      style={{
+                        background: "linear-gradient(135deg,#f97316,#ec4899)",
+                        animationDelay: `${i * 80}ms`,
+                      }}
+                    >
+                      {i + 1}
+                    </span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </Reveal>
+        <Reveal type="flip" delay={80}>
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-xl relative overflow-hidden">
+            <div
+              className="rt-blob w-28 h-28 bg-pink-200 opacity-20"
+              style={{
+                position: "absolute",
+                bottom: "-20px",
+                left: "-20px",
+                animationDuration: "8s",
+                animationDelay: "2s",
+              }}
+            />
+            <h2
+              className="text-2xl font-black mb-7 text-gray-900 dark:text-white relative z-10"
+              style={{ fontFamily: "'Nunito', sans-serif" }}
+            >
+              How to <span className="ab-shimmer">Return an Item</span>
+            </h2>
+            <div className="space-y-4 relative z-10">
+              {steps.map((step, i) => (
+                <Reveal key={i} type="left" delay={i * 100}>
+                  <div className="step-row flex items-start gap-5 p-4 rounded-2xl bg-gray-50 dark:bg-gray-700/50">
+                    <div
+                      className="step-num w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-white font-black"
+                      style={{
+                        background: `linear-gradient(135deg,${step.color},#ec4899)`,
+                        animationDelay: `${i * 100 + 200}ms`,
+                      }}
+                    >
+                      {step.num}
+                    </div>
+                    <div>
+                      <h3
+                        className="font-black text-gray-900 dark:text-white mb-1"
+                        style={{ fontFamily: "'Nunito', sans-serif" }}
+                      >
+                        {step.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        {step.desc}
+                      </p>
+                    </div>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </Reveal>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {boxes.map((box, i) => (
+            <Reveal key={i} type="flip" delay={i * 120}>
+              <div
+                className="rt-card group rounded-2xl p-6 border-2 relative overflow-hidden"
+                style={{ background: box.bg, borderColor: box.border }}
+              >
+                <div
+                  className="rt-blob w-20 h-20 opacity-20"
+                  style={{
+                    position: "absolute",
+                    top: "-16px",
+                    right: "-16px",
+                    background: box.color,
+                    animationDuration: `${6 + i}s`,
+                  }}
+                />
+                <div
+                  className="rt-icon w-12 h-12 rounded-xl flex items-center justify-center mb-4 relative z-10"
+                  style={{ background: `${box.color}22` }}
+                >
+                  <box.icon className="w-6 h-6" style={{ color: box.color }} />
+                </div>
+                <h3
+                  className="font-black text-gray-900 dark:text-white mb-3 relative z-10"
+                  style={{ fontFamily: "'Nunito', sans-serif" }}
+                >
+                  {box.title}
+                </h3>
+                <ul className="space-y-1.5 relative z-10">
+                  {box.items.map((item, j) => (
+                    <li
+                      key={j}
+                      className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"
+                    >
+                      <span
+                        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                        style={{ background: box.color }}
+                      />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+        <Reveal type="flip" delay={100}>
           <div
-            className="rounded-2xl sm:rounded-3xl p-6 sm:p-10 text-white relative overflow-hidden"
+            className="rounded-3xl p-10 text-white text-center relative overflow-hidden"
             style={{
               background: "linear-gradient(135deg,#f97316 0%,#ec4899 100%)",
             }}
           >
             <div
-              className="rt-blob"
+              className="rt-blob w-40 h-40 bg-white opacity-10"
               style={{
-                width: "9rem",
-                height: "9rem",
-                background: "white",
-                opacity: 0.1,
                 position: "absolute",
-                top: "-30px",
-                left: "-30px",
+                top: "-40px",
+                left: "-40px",
                 animationDuration: "7s",
               }}
             />
-            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 relative z-10">
-              <RotateCcw className="w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0 mt-1" />
-              <h2
-                className="text-xl sm:text-2xl font-black"
-                style={{ fontFamily: "Syne,sans-serif" }}
+            <h2
+              className="text-3xl font-black mb-3 relative z-10"
+              style={{ fontFamily: "'Nunito', sans-serif" }}
+            >
+              <WaveText text="Questions About Returns?" />
+            </h2>
+            <p className="mb-7 text-white/90 text-lg relative z-10">
+              Our team is here to make your return as smooth as possible.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
+              <a
+                href="mailto:tsmglobalcosmetic@gmail.com"
+                className="cta-btn px-8 py-3.5 bg-white rounded-full font-black text-sm"
+                style={{ color: "#f97316" }}
               >
-                <WaveText text="Start a Return?" />
-              </h2>
+                <Mail className="w-4 h-4 mr-1.5" />
+                Email Support
+              </a>
+              <a
+                href="tel:+2348142401236"
+                className="cta-btn px-8 py-3.5 rounded-full font-black text-sm text-white"
+                style={{
+                  background: "rgba(255,255,255,.18)",
+                  border: "2px solid rgba(255,255,255,.4)",
+                }}
+              >
+                <Phone className="w-4 h-4 mr-1.5" />
+                Call Us
+              </a>
             </div>
-            <p className="mb-2 text-white/90 relative z-10 text-sm sm:text-base">
-              Ready to return an item or have questions? Reach out to us
-              directly on WhatsApp!
-            </p>
-            <p className="font-black relative z-10 text-sm sm:text-base break-words">
-              Contact us at tsmglobalcosmetic or call (+234) 080-6703-0009
-            </p>
           </div>
         </Reveal>
       </div>

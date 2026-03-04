@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { ChevronDown, Mail, Phone } from "lucide-react";
 
 const FAQ_STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap');
   @keyframes heroTitle { 0%{opacity:0;transform:perspective(800px) rotateX(90deg) translateY(-40px);filter:blur(16px);}60%{filter:blur(0);}100%{opacity:1;transform:perspective(800px) rotateX(0) translateY(0);} }
   @keyframes fadeUp { from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);} }
   @keyframes morphBlob { 0%,100%{border-radius:60% 40% 30% 70%/60% 30% 70% 40%;}25%{border-radius:30% 60% 70% 40%/50% 60% 30% 60%;}50%{border-radius:50% 60% 30% 40%/70% 30% 50% 60%;}75%{border-radius:40% 30% 60% 70%/30% 70% 40% 50%;} }
@@ -94,7 +95,7 @@ export const FAQ: React.FC = () => {
   const [ready, setReady] = useState(false);
   useEffect(() => { const t = setTimeout(() => setReady(true), 60); return () => clearTimeout(t); }, []);
 
-  const tickerItems = ["\u2726 FREQUENTLY ASKED", "\u2726 GOT QUESTIONS?", "\u2726 WE HAVE ANSWERS", "\u2726 BABY CARE FAQ", "\u2726 NEED HELP?"];
+  const tickerItems = ["FREQUENTLY ASKED", "GOT QUESTIONS?", "WE HAVE ANSWERS", "BABY CARE FAQ", "NEED HELP?"];
 
   return (
     <div className="min-h-screen overflow-x-hidden relative" style={{ fontFamily:"'Plus Jakarta Sans',sans-serif", background:"linear-gradient(135deg,#fff7ed 0%,#fce7f3 50%,#fef9c3 100%)" }}>
@@ -107,7 +108,7 @@ export const FAQ: React.FC = () => {
           FAQ
         </div>
         <h1 className="text-5xl md:text-7xl font-black mb-4 leading-tight"
-          style={{ fontFamily:"Syne, sans-serif", animation: ready?"heroTitle 1s cubic-bezier(.22,.68,0,1.2) .1s both":"none", opacity: ready?undefined:0 }}>
+          style={{ fontFamily:"'Nunito', sans-serif", animation: ready?"heroTitle 1s cubic-bezier(.22,.68,0,1.2) .1s both":"none", opacity: ready?undefined:0 }}>
           <span className="ab-shimmer">Frequently</span> Asked
         </h1>
         <p className={`text-xl text-gray-600 faq-reveal-up ${ready?"on":""}`} style={{ transitionDelay:"350ms" }}>
@@ -158,7 +159,7 @@ export const FAQ: React.FC = () => {
           <div className="rounded-3xl p-10 text-white text-center relative overflow-hidden"
             style={{ background:"linear-gradient(135deg,#f97316 0%,#ec4899 100%)" }}>
             <div className="faq-blob w-40 h-40 bg-white opacity-10 top-0 left-0 -translate-x-1/4 -translate-y-1/4" style={{ animationDuration:"7s" }} />
-            <h2 className="text-3xl font-black mb-3 relative z-10" style={{ fontFamily:"Syne, sans-serif" }}>
+            <h2 className="text-3xl font-black mb-3 relative z-10" style={{ fontFamily:"'Nunito', sans-serif" }}>
               <WaveText text="Still Have Questions?" />
             </h2>
             <p className="mb-7 text-white/90 relative z-10 text-lg">Our team is always happy to help!</p>
