@@ -4,10 +4,10 @@ import { Star, Filter, ShoppingCart, Sparkles } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useProducts, type Product } from "../hooks/useProducts";
 import { useCart } from "../contexts/CartContext";
-import { useAuth } from "../contexts/AuthContext";
 import { getAccessToken } from "../contexts/AuthContext";
 
 type ProductsProps = { onNavigate: (page: string) => void };
+
 const CATEGORIES = [
   { id: "all", name: "All Products" },
   { id: "baby soap", name: "Baby Soap" },
@@ -27,6 +27,7 @@ const STYLES = `
   @keyframes ticker{from{transform:translateX(0);}to{transform:translateX(-50%);}}
   @keyframes dotBounce{0%,100%{transform:translateY(0);opacity:.5;}50%{transform:translateY(-8px);opacity:1;}}
   @keyframes stockFade{from{opacity:0;transform:scale(.8);}to{opacity:1;transform:scale(1);}}
+  @keyframes explode{0%{transform:translate(0,0) scale(1);opacity:1;}100%{transform:translate(var(--ex),var(--ey)) scale(0);opacity:0;}}
   .pr-blob{position:absolute;pointer-events:none;animation:morphBlob 9s ease-in-out infinite;filter:blur(2px);}
   .ab-shimmer{background:linear-gradient(135deg,#f97316 0%,#ec4899 50%,#fbbf24 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
   .pr-reveal-up{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s cubic-bezier(.22,.68,0,1.2);}
@@ -50,7 +51,7 @@ const STYLES = `
   .dot-3{animation:dotBounce .9s ease-in-out .3s infinite;}
   .star-i{display:inline-block;}
   .star-row:hover .star-i{animation:waveText .8s ease both;}
-  .star-row:hover .star-i:nth-child(1){animation-delay:0ms;} .star-row:hover .star-i:nth-child(2){animation-delay:60ms;} .star-row:hover .star-i:nth-child(3){animation-delay:120ms;} .star-row:hover .star-i:nth-child(4){animation-delay:180ms;} .star-row:hover .star-i:nth-child(5){animation-delay:240ms;}
+  .star-row:hover .star-i:nth-child(1){animation-delay:0ms;}.star-row:hover .star-i:nth-child(2){animation-delay:60ms;}.star-row:hover .star-i:nth-child(3){animation-delay:120ms;}.star-row:hover .star-i:nth-child(4){animation-delay:180ms;}.star-row:hover .star-i:nth-child(5){animation-delay:240ms;}
 `;
 
 function useStyles() {
@@ -62,6 +63,7 @@ function useStyles() {
     document.head.appendChild(s);
   }, []);
 }
+
 function useInView(t = 0.1) {
   const ref = useRef<HTMLDivElement>(null);
   const [v, setV] = useState(false);
@@ -82,9 +84,11 @@ function useInView(t = 0.1) {
   }, [t]);
   return { ref, v };
 }
+
 function useTilt(str = 8) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    if (window.matchMedia("(max-width: 768px)").matches) return;
     const el = ref.current;
     if (!el) return;
     const mv = (e: MouseEvent) => {
@@ -113,13 +117,14 @@ function useTilt(str = 8) {
 }
 
 function spawnParticles(x: number, y: number) {
+  if (window.matchMedia("(max-width: 768px)").matches) return;
   const colors = ["#f97316", "#ec4899", "#fbbf24", "#84cc16"];
   for (let i = 0; i < 12; i++) {
     const p = document.createElement("div");
     const a = (i / 12) * Math.PI * 2;
     const d = 40 + Math.random() * 50;
     const sz = 5 + Math.random() * 6;
-    p.style.cssText = `position:fixed;border-radius:50%;pointer-events:none;z-index:9999;left:${x}px;top:${y}px;width:${sz}px;height:${sz}px;background:${colors[Math.floor(Math.random() * colors.length)]};animation:explode .7s ease-out forwards;`;
+    p.style.cssText = `position:fixed;border-radius:50%;pointer-events:none;z-index:9999;left:${x}px;top:${y}px;width:${sz}px;height:${sz}px;background:${colors[Math.floor(Math.random() * colors.length)]};--ex:${Math.cos(a) * d}px;--ey:${Math.sin(a) * d}px;animation:explode .7s ease-out forwards;`;
     document.body.appendChild(p);
     setTimeout(() => p.remove(), 800);
   }
@@ -140,14 +145,16 @@ const ProductCard: React.FC<{
     >
       <div
         ref={tilt}
-        className="pr-card bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-lg relative group"
+        className="pr-card bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-lg relative group h-full flex flex-col"
         style={{ transformStyle: "preserve-3d" }}
       >
         <div
           className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-orange-100 opacity-0 group-hover:opacity-30 transition-opacity duration-500 pointer-events-none"
           style={{ animation: "morphBlob 5s ease infinite" }}
         />
-        <div className="relative h-56 overflow-hidden bg-orange-50 dark:bg-gray-700">
+
+        {/* Image */}
+        <div className="relative h-44 sm:h-56 overflow-hidden bg-orange-50 dark:bg-gray-700 flex-shrink-0">
           <img
             src={product.image}
             alt={product.name}
@@ -156,7 +163,7 @@ const ProductCard: React.FC<{
           {product.quantity === 0 && (
             <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
               <span
-                className="text-white font-black text-sm px-4 py-2 rounded-full"
+                className="text-white font-black text-[10px] sm:text-sm px-3 sm:px-4 py-1 sm:py-2 rounded-full"
                 style={{
                   background: "rgba(239,68,68,.85)",
                   animation: "stockFade .4s ease both",
@@ -167,7 +174,7 @@ const ProductCard: React.FC<{
             </div>
           )}
           <div
-            className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-white text-xs font-black"
+            className="absolute top-2 sm:top-3 left-2 sm:left-3 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-white text-[9px] sm:text-xs font-black"
             style={{
               background: "linear-gradient(135deg,#f97316,#ec4899)",
               animation: `badgePop .5s cubic-bezier(.22,.68,0,1.4) ${delay + 200}ms both`,
@@ -176,30 +183,37 @@ const ProductCard: React.FC<{
             {product.tag || "Product"}
           </div>
         </div>
-        <div className="p-5" style={{ transform: "translateZ(10px)" }}>
+
+        {/* Content */}
+        <div
+          className="p-3 sm:p-5 flex flex-col flex-1"
+          style={{ transform: "translateZ(10px)" }}
+        >
           <h3
-            className="text-base font-black text-gray-900 dark:text-white mb-1.5 line-clamp-1"
+            className="text-xs sm:text-base font-black text-gray-900 dark:text-white mb-1 sm:mb-1.5 line-clamp-2 sm:line-clamp-1"
             style={{ fontFamily: "'Nunito', sans-serif" }}
           >
             {product.name}
           </h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 line-clamp-2 leading-relaxed">
+          <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mb-2 sm:mb-3 line-clamp-2 leading-relaxed flex-1 hidden sm:block">
             {product.description}
           </p>
-          <div className="flex items-center mb-3 star-row">
+          <div className="flex items-center mb-2 sm:mb-3 star-row">
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
-                className="star-i w-3.5 h-3.5 fill-yellow-400 text-yellow-400"
+                className="star-i w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 fill-yellow-400 text-yellow-400"
               />
             ))}
-            <span className="ml-1.5 text-xs text-gray-400">(50+)</span>
+            <span className="ml-1 text-[10px] sm:text-xs text-gray-400">
+              (50+)
+            </span>
           </div>
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-xl font-black ab-shimmer">
+          <div className="flex justify-between items-center mb-2 sm:mb-4">
+            <span className="text-sm sm:text-xl font-black ab-shimmer">
               ₦{parseFloat(product.unit_price).toFixed(2)}
             </span>
-            <span className="text-xs text-gray-400">
+            <span className="text-[10px] sm:text-xs text-gray-400 hidden sm:block">
               {product.quantity} in stock
             </span>
           </div>
@@ -209,10 +223,10 @@ const ProductCard: React.FC<{
               onAdd(product, e);
             }}
             disabled={product.quantity === 0}
-            className="add-btn w-full py-3 text-white rounded-full font-black text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+            className="add-btn w-full py-2 sm:py-3 text-white rounded-full font-black text-[10px] sm:text-sm flex items-center justify-center gap-1 sm:gap-2 disabled:opacity-50"
             style={{ background: "linear-gradient(135deg,#f97316,#ec4899)" }}
           >
-            <ShoppingCart className="w-4 h-4" />
+            <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4" />
             {product.quantity === 0 ? "Out of Stock" : "Add to Cart"}
           </button>
         </div>
@@ -228,10 +242,12 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
   const [filtered, setFiltered] = useState<Product[]>([]);
   const [cat, setCat] = useState("all");
   const [ready, setReady] = useState(false);
+
   useEffect(() => {
     const t = setTimeout(() => setReady(true), 60);
     return () => clearTimeout(t);
   }, []);
+
   useEffect(() => {
     setFiltered(
       cat === "all" ? products : products.filter((p) => p.tag === cat),
@@ -241,7 +257,7 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
   const addCart = (product: Product) => {
     if (!getAccessToken()) {
       toast.error("Please log in to add items to your cart.", {
-        icon: "\uD83D\uDD12",
+        icon: "🔒",
         duration: 4000,
       });
       onNavigate("auth");
@@ -272,7 +288,7 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
 
   if (error)
     return (
-      <div className="min-h-screen flex items-center justify-center text-red-500 font-bold">
+      <div className="min-h-screen flex items-center justify-center text-red-500 font-bold px-4 text-center">
         Failed to load products: {error}
       </div>
     );
@@ -286,8 +302,9 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
           "linear-gradient(135deg,#fff7ed 0%,#fce7f3 50%,#fef9c3 100%)",
       }}
     >
+      {/* Blobs — hidden on mobile */}
       <div
-        className="pr-blob w-80 h-80 bg-orange-300 opacity-20"
+        className="pr-blob w-60 sm:w-80 h-60 sm:h-80 bg-orange-300 opacity-20 hidden sm:block"
         style={{
           position: "absolute",
           top: "-60px",
@@ -296,7 +313,7 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
         }}
       />
       <div
-        className="pr-blob w-60 h-60 bg-pink-300 opacity-15"
+        className="pr-blob w-44 sm:w-60 h-44 sm:h-60 bg-pink-300 opacity-15 hidden sm:block"
         style={{
           position: "absolute",
           bottom: "60px",
@@ -305,9 +322,11 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
           animationDelay: "3s",
         }}
       />
-      <section className="relative pt-28 pb-12 text-center z-10">
+
+      {/* ── Header ── */}
+      <section className="relative pt-24 sm:pt-28 pb-6 sm:pb-12 text-center z-10 px-4">
         <div
-          className="inline-block px-5 py-2.5 rounded-full text-white text-sm font-black mb-6"
+          className="inline-block px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-white text-xs sm:text-sm font-black mb-4 sm:mb-6"
           style={{
             background: "linear-gradient(135deg,#f97316,#ec4899,#fbbf24)",
             animation: ready
@@ -319,7 +338,7 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
           SHOP NOW
         </div>
         <h1
-          className="text-5xl md:text-7xl font-black mb-4"
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-3 sm:mb-4"
           style={{
             fontFamily: "'Nunito', sans-serif",
             animation: ready
@@ -331,14 +350,16 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
           Our <span className="ab-shimmer">Products</span>
         </h1>
         <p
-          className={`text-xl text-gray-600 pr-reveal-up ${ready ? "on" : ""}`}
+          className={`text-base sm:text-xl text-gray-600 pr-reveal-up ${ready ? "on" : ""}`}
           style={{ transitionDelay: "350ms" }}
         >
           Premium baby care products for gentle, loving care
         </p>
       </section>
+
+      {/* ── Ticker ── */}
       <div
-        className="tick-wrap py-3 mb-10"
+        className="tick-wrap py-2.5 sm:py-3 mb-6 sm:mb-10"
         style={{
           background: "linear-gradient(90deg,#f97316,#ec4899)",
           borderTop: "2px solid #fbbf24",
@@ -349,24 +370,31 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
           {[...ticks, ...ticks].map((t, i) => (
             <span
               key={i}
-              className="text-white font-black text-sm tracking-widest px-8 flex-shrink-0"
+              className="text-white font-black text-xs sm:text-sm tracking-widest px-4 sm:px-8 flex-shrink-0"
             >
               {t}
             </span>
           ))}
         </div>
       </div>
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+
+      {/* ── Content ── */}
+      <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-14 sm:pb-24">
+        {/* Category filters — horizontal scroll on mobile */}
         <div
-          className={`flex items-center justify-center mb-10 gap-3 flex-wrap pr-reveal-up ${ready ? "on" : ""}`}
-          style={{ transitionDelay: "400ms" }}
+          className={`flex items-center mb-6 sm:mb-10 gap-2 sm:gap-3 pr-reveal-up overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap sm:justify-center ${ready ? "on" : ""}`}
+          style={{ transitionDelay: "400ms", scrollbarWidth: "none" }}
         >
-          <Filter className="w-5 h-5 text-gray-500" />
-          {CATEGORIES.map((c, i) => (
+          <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 flex-shrink-0" />
+          {CATEGORIES.map((c) => (
             <button
               key={c.id}
               onClick={() => setCat(c.id)}
-              className={`cat-btn px-6 py-2.5 rounded-full font-black text-sm ${cat === c.id ? "text-white" : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300"}`}
+              className={`cat-btn px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full font-black text-xs sm:text-sm whitespace-nowrap flex-shrink-0 ${
+                cat === c.id
+                  ? "text-white"
+                  : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+              }`}
               style={
                 cat === c.id
                   ? {
@@ -380,12 +408,14 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
             </button>
           ))}
         </div>
+
+        {/* Grid — 2 cols on mobile, 3 on md, 4 on lg */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
             {[...Array(8)].map((_, i) => (
               <div
                 key={i}
-                className="h-80 bg-white rounded-3xl shadow-md relative overflow-hidden"
+                className="h-56 sm:h-80 bg-white rounded-3xl shadow-md relative overflow-hidden"
               >
                 <div
                   className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-50/60 to-transparent"
@@ -403,7 +433,7 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
               {filtered.map((p, i) => (
                 <ProductCard
                   key={p.id}
@@ -415,14 +445,14 @@ export const Products: React.FC<ProductsProps> = ({ onNavigate }) => {
             </div>
             {filtered.length === 0 && (
               <div
-                className="text-center py-20"
+                className="text-center py-16 sm:py-20"
                 style={{ animation: "fadeUp .6s ease both" }}
               >
                 <Sparkles
-                  className="w-16 h-16 mx-auto mb-4"
+                  className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4"
                   style={{ color: "#f97316" }}
                 />
-                <p className="text-xl font-bold text-gray-500">
+                <p className="text-base sm:text-xl font-bold text-gray-500">
                   No products found in this category
                 </p>
               </div>

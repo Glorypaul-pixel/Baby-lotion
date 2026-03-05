@@ -111,74 +111,118 @@ function useInView(threshold = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
-    const el = ref.current; if (!el) return;
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold });
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold },
+    );
     obs.observe(el);
     return () => obs.disconnect();
   }, [threshold]);
   return { ref, visible };
 }
 
-const Reveal: React.FC<{ children: React.ReactNode; type?: "up"|"flip"|"left"; delay?: number; className?: string }> = ({
-  children, type = "up", delay = 0, className = ""
-}) => {
+const Reveal: React.FC<{
+  children: React.ReactNode;
+  type?: "up" | "flip" | "left";
+  delay?: number;
+  className?: string;
+}> = ({ children, type = "up", delay = 0, className = "" }) => {
   const { ref, visible } = useInView();
-  const cls = { up:"blog-reveal-up", flip:"blog-reveal-flip", left:"blog-reveal-left" }[type];
+  const cls = {
+    up: "blog-reveal-up",
+    flip: "blog-reveal-flip",
+    left: "blog-reveal-left",
+  }[type];
   return (
-    <div ref={ref} className={`${cls} ${visible?"on":""} ${className}`}
-      style={{ transitionDelay:`${delay}ms`, animationDelay: visible ? `${delay}ms` : undefined }}>
+    <div
+      ref={ref}
+      className={`${cls} ${visible ? "on" : ""} ${className}`}
+      style={{
+        transitionDelay: `${delay}ms`,
+        animationDelay: visible ? `${delay}ms` : undefined,
+      }}
+    >
       {children}
     </div>
   );
 };
 
-const WaveText: React.FC<{ text: string; className?: string }> = ({ text, className="" }) => (
-  <span className={className}>
-    {text.split("").map((ch, i) => (
-      <span key={i} className="wave-char" style={{ animation:`waveText 1.6s ease-in-out ${i*75}ms infinite` }}>
-        {ch===" " ? "\u00A0" : ch}
-      </span>
-    ))}
-  </span>
-);
-
 function useTilt(strength = 8) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const el = ref.current; if (!el) return;
+    const el = ref.current;
+    if (!el) return;
     const onMove = (e: MouseEvent) => {
       const r = el.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width  - 0.5;
-      const y = (e.clientY - r.top)  / r.height - 0.5;
-      el.style.transform = `perspective(900px) rotateY(${x*strength}deg) rotateX(${-y*strength}deg) scale(1.03)`;
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      el.style.transform = `perspective(900px) rotateY(${x * strength}deg) rotateX(${-y * strength}deg) scale(1.03)`;
     };
-    const onLeave = () => { el.style.transition = "transform .5s ease"; el.style.transform = ""; };
-    const onEnter = () => { el.style.transition = "transform .1s ease"; };
+    const onLeave = () => {
+      el.style.transition = "transform .5s ease";
+      el.style.transform = "";
+    };
+    const onEnter = () => {
+      el.style.transition = "transform .1s ease";
+    };
     el.addEventListener("mousemove", onMove);
     el.addEventListener("mouseleave", onLeave);
     el.addEventListener("mouseenter", onEnter);
-    return () => { el.removeEventListener("mousemove", onMove); el.removeEventListener("mouseleave", onLeave); el.removeEventListener("mouseenter", onEnter); };
+    return () => {
+      el.removeEventListener("mousemove", onMove);
+      el.removeEventListener("mouseleave", onLeave);
+      el.removeEventListener("mouseenter", onEnter);
+    };
   }, [strength]);
   return ref;
 }
 
 // ── Single post view ──────────────────────────────────────────────────────────
-const PostView: React.FC<{ post: BlogPost; onBack: () => void }> = ({ post, onBack }) => {
+const PostView: React.FC<{ post: BlogPost; onBack: () => void }> = ({
+  post,
+  onBack,
+}) => {
   const [ready, setReady] = useState(false);
   const tiltRef = useTilt(5);
-  useEffect(() => { const t = setTimeout(() => setReady(true), 60); return () => clearTimeout(t); }, []);
+  useEffect(() => {
+    const t = setTimeout(() => setReady(true), 60);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
-    <div className="min-h-screen overflow-x-hidden" style={{ fontFamily:"'Plus Jakarta Sans',sans-serif", background:"linear-gradient(135deg,#fff7ed 0%,#fce7f3 50%,#fef9c3 100%)" }}>
-      <div className="blog-blob w-72 h-72 bg-orange-300 opacity-20 top-[-60px] left-[-60px]" style={{ animationDuration:"9s" }} />
-      <div className="blog-blob w-56 h-56 bg-pink-300 opacity-15 bottom-10 right-[-40px]" style={{ animationDuration:"11s", animationDelay:"3s" }} />
+    <div
+      className="min-h-screen overflow-x-hidden"
+      style={{
+        fontFamily: "'Plus Jakarta Sans',sans-serif",
+        background:
+          "linear-gradient(135deg,#fff7ed 0%,#fce7f3 50%,#fef9c3 100%)",
+      }}
+    >
+      <div
+        className="blog-blob w-72 h-72 bg-orange-300 opacity-20 top-[-60px] left-[-60px]"
+        style={{ animationDuration: "9s" }}
+      />
+      <div
+        className="blog-blob w-56 h-56 bg-pink-300 opacity-15 bottom-10 right-[-40px]"
+        style={{ animationDuration: "11s", animationDelay: "3s" }}
+      />
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16">
-        <div className={`blog-reveal-left ${ready?"on":""} mb-10`} style={{ transitionDelay:"0ms" }}>
+        <div
+          className={`blog-reveal-left ${ready ? "on" : ""} mb-10`}
+          style={{ transitionDelay: "0ms" }}
+        >
           <button
             onClick={onBack}
             className="auth-submit inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-white"
-            style={{ background:"linear-gradient(135deg,#f97316,#ec4899)" }}
+            style={{ background: "linear-gradient(135deg,#f97316,#ec4899)" }}
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Blog
@@ -188,28 +232,60 @@ const PostView: React.FC<{ post: BlogPost; onBack: () => void }> = ({ post, onBa
         <article
           ref={tiltRef}
           className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-2xl"
-          style={{ transformStyle:"preserve-3d", animation: ready ? "cardFlip .8s cubic-bezier(.22,.68,0,1.2) .1s both" : "none", opacity: ready ? undefined : 0 }}
+          style={{
+            transformStyle: "preserve-3d",
+            animation: ready
+              ? "cardFlip .8s cubic-bezier(.22,.68,0,1.2) .1s both"
+              : "none",
+            opacity: ready ? undefined : 0,
+          }}
         >
           <div className="relative h-96 overflow-hidden group">
-            <div className="absolute inset-0 z-0" style={{ background:"linear-gradient(135deg,#f97316,#ec4899)", animation:"pulseGlow 3s ease-in-out infinite", filter:"blur(20px)", opacity:.35 }} />
-            <img src={post.image_url} alt={post.title} className="img-zoom relative z-10 w-full h-full object-cover" />
+            <div
+              className="absolute inset-0 z-0"
+              style={{
+                background: "linear-gradient(135deg,#f97316,#ec4899)",
+                animation: "pulseGlow 3s ease-in-out infinite",
+                filter: "blur(20px)",
+                opacity: 0.35,
+              }}
+            />
+            <img
+              src={post.image_url}
+              alt={post.title}
+              className="img-zoom relative z-10 w-full h-full object-cover"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-20" />
           </div>
 
-          <div className="p-8 md:p-12" style={{ transform:"translateZ(12px)" }}>
+          <div
+            className="p-8 md:p-12"
+            style={{ transform: "translateZ(12px)" }}
+          >
             <Reveal>
-              <h1 className="text-4xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white" style={{ fontFamily:"'Nunito', sans-serif" }}>
+              <h1
+                className="text-4xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white"
+                style={{ fontFamily: "'Nunito', sans-serif" }}
+              >
                 {post.title}
               </h1>
             </Reveal>
             <Reveal delay={100}>
               <div className="flex items-center gap-6 mb-8 text-gray-500 dark:text-gray-400 text-sm font-medium">
-                <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" />{new Date(post.created_at).toLocaleDateString()}</span>
-                <span className="flex items-center gap-1.5"><User className="w-4 h-4" />Preferable Team</span>
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4" />
+                  {new Date(post.created_at).toLocaleDateString()}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <User className="w-4 h-4" />
+                  Preferable Team
+                </span>
               </div>
             </Reveal>
             <Reveal delay={200}>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg whitespace-pre-line">{post.content}</p>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg whitespace-pre-line">
+                {post.content}
+              </p>
             </Reveal>
           </div>
         </article>
@@ -221,63 +297,154 @@ const PostView: React.FC<{ post: BlogPost; onBack: () => void }> = ({ post, onBa
 // ── Blog list ─────────────────────────────────────────────────────────────────
 export const Blog: React.FC = () => {
   useBlogStyles();
-  const [posts, setPosts]               = useState<BlogPost[]>([]);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
-  const [loading, setLoading]           = useState(true);
-  const [ready, setReady]               = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [ready, setReady] = useState(false);
 
-  useEffect(() => { const t = setTimeout(() => setReady(true), 60); return () => clearTimeout(t); }, []);
+  useEffect(() => {
+    const t = setTimeout(() => setReady(true), 60);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const fetch = async () => {
       try {
         const mockPosts: BlogPost[] = [
-          { id:1, title:"Caring for Newborn Skin",    excerpt:"Tips and tricks for keeping your baby's skin soft and healthy.",                                       content:"Your baby's skin is delicate and requires special care... (full article here).",                              image_url:"/images/baby.jpg",  created_at:new Date().toISOString(), published:true },
-          { id:2, title:"Best Bedtime Routines",       excerpt:"How to create a calming routine that helps your baby sleep better.",                                    content:"Establishing a consistent bedtime routine helps your baby understand when it's time to sleep...",              image_url:"/images/green.png", created_at:new Date().toISOString(), published:true },
-          { id:3, title:"Choosing Natural Skincare",   excerpt:"A guide to picking the safest and most effective products for your little one.",                        content:"When choosing skincare for your baby, always look for natural, dermatologist-tested ingredients...",           image_url:"/images/care.png",  created_at:new Date().toISOString(), published:true },
+          {
+            id: 1,
+            title: "Caring for Newborn Skin",
+            excerpt:
+              "Tips and tricks for keeping your baby's skin soft and healthy.",
+            content:
+              "Your baby's skin is delicate and requires special care... (full article here).",
+            image_url: "/images/baby.jpg",
+            created_at: new Date().toISOString(),
+            published: true,
+          },
+          {
+            id: 2,
+            title: "Best Bedtime Routines",
+            excerpt:
+              "How to create a calming routine that helps your baby sleep better.",
+            content:
+              "Establishing a consistent bedtime routine helps your baby understand when it's time to sleep...",
+            image_url: "/images/green.png",
+            created_at: new Date().toISOString(),
+            published: true,
+          },
+          {
+            id: 3,
+            title: "Choosing Natural Skincare",
+            excerpt:
+              "A guide to picking the safest and most effective products for your little one.",
+            content:
+              "When choosing skincare for your baby, always look for natural, dermatologist-tested ingredients...",
+            image_url: "/images/care.png",
+            created_at: new Date().toISOString(),
+            published: true,
+          },
         ];
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise((r) => setTimeout(r, 1000));
         setPosts(mockPosts);
         toast.success("Blog posts loaded!");
-      } catch { toast.error("Failed to load blog posts."); }
-      finally  { setLoading(false); }
+      } catch {
+        toast.error("Failed to load blog posts.");
+      } finally {
+        setLoading(false);
+      }
     };
     fetch();
   }, []);
 
-  if (selectedPost) return <PostView post={selectedPost} onBack={() => { setSelectedPost(null); }} />;
+  if (selectedPost)
+    return (
+      <PostView
+        post={selectedPost}
+        onBack={() => {
+          setSelectedPost(null);
+        }}
+      />
+    );
 
-  const tickerItems = ["BABY CARE TIPS", "NATURAL SKINCARE", "BEDTIME ROUTINES", "HEALTHY SKIN", "EXPERT ADVICE", "PARENTING GUIDE"];
+  const tickerItems = [
+    "BABY CARE TIPS",
+    "NATURAL SKINCARE",
+    "BEDTIME ROUTINES",
+    "HEALTHY SKIN",
+    "EXPERT ADVICE",
+    "PARENTING GUIDE",
+  ];
 
   return (
-    <div className="min-h-screen overflow-x-hidden" style={{ fontFamily:"'Plus Jakarta Sans',sans-serif", background:"linear-gradient(135deg,#fff7ed 0%,#fce7f3 50%,#fef9c3 100%)" }}>
-      <div className="blog-blob w-96 h-96 bg-orange-300 opacity-20 top-[-80px] left-[-80px]" style={{ animationDuration:"9s" }} />
-      <div className="blog-blob w-64 h-64 bg-pink-300 opacity-15 bottom-20 right-[-40px]" style={{ animationDuration:"11s", animationDelay:"3s" }} />
+    <div
+      className="min-h-screen overflow-x-hidden"
+      style={{
+        fontFamily: "'Plus Jakarta Sans',sans-serif",
+        background:
+          "linear-gradient(135deg,#fff7ed 0%,#fce7f3 50%,#fef9c3 100%)",
+      }}
+    >
+      <div
+        className="blog-blob w-96 h-96 bg-orange-300 opacity-20 top-[-80px] left-[-80px]"
+        style={{ animationDuration: "9s" }}
+      />
+      <div
+        className="blog-blob w-64 h-64 bg-pink-300 opacity-15 bottom-20 right-[-40px]"
+        style={{ animationDuration: "11s", animationDelay: "3s" }}
+      />
 
       {/* Header */}
       <section className="relative pt-28 pb-16 text-center z-10">
         <div
           className="inline-block px-5 py-2.5 rounded-full text-white text-sm font-black mb-6"
-          style={{ background:"linear-gradient(135deg,#f97316,#ec4899,#fbbf24)", animation: ready ? "badgePop .6s cubic-bezier(.22,.68,0,1.4) both" : "none", opacity: ready ? undefined : 0 }}
+          style={{
+            background: "linear-gradient(135deg,#f97316,#ec4899,#fbbf24)",
+            animation: ready
+              ? "badgePop .6s cubic-bezier(.22,.68,0,1.4) both"
+              : "none",
+            opacity: ready ? undefined : 0,
+          }}
         >
           OUR BLOG
         </div>
         <h1
           className="text-5xl md:text-7xl font-black mb-4 leading-tight"
-          style={{ fontFamily:"'Nunito', sans-serif", animation: ready ? "heroTitle 1s cubic-bezier(.22,.68,0,1.2) .1s both" : "none", opacity: ready ? undefined : 0 }}
+          style={{
+            fontFamily: "'Nunito', sans-serif",
+            animation: ready
+              ? "heroTitle 1s cubic-bezier(.22,.68,0,1.2) .1s both"
+              : "none",
+            opacity: ready ? undefined : 0,
+          }}
         >
           <span className="ab-shimmer">Blog</span> &amp; Tips
         </h1>
-        <p className={`text-xl text-gray-600 dark:text-gray-400 blog-reveal-up ${ready?"on":""}`} style={{ transitionDelay:"350ms" }}>
+        <p
+          className={`text-xl text-gray-600 dark:text-gray-400 blog-reveal-up ${ready ? "on" : ""}`}
+          style={{ transitionDelay: "350ms" }}
+        >
           Expert advice and tips for caring for your little one
         </p>
       </section>
 
       {/* Ticker */}
-      <div className="blog-ticker-wrap py-3 mb-12" style={{ background:"linear-gradient(90deg,#f97316,#ec4899)", borderTop:"2px solid #fbbf24", borderBottom:"2px solid #fbbf24" }}>
+      <div
+        className="blog-ticker-wrap py-3 mb-12"
+        style={{
+          background: "linear-gradient(90deg,#f97316,#ec4899)",
+          borderTop: "2px solid #fbbf24",
+          borderBottom: "2px solid #fbbf24",
+        }}
+      >
         <div className="blog-ticker-track">
-          {[...tickerItems,...tickerItems].map((item,i) => (
-            <span key={i} className="text-white font-black text-sm tracking-widest px-8 flex-shrink-0">{item}</span>
+          {[...tickerItems, ...tickerItems].map((item, i) => (
+            <span
+              key={i}
+              className="text-white font-black text-sm tracking-widest px-8 flex-shrink-0"
+            >
+              {item}
+            </span>
           ))}
         </div>
       </div>
@@ -286,9 +453,17 @@ export const Blog: React.FC = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(3)].map((_,i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-lg h-80 relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent" style={{ animation:`shimmerSkeleton 1.6s ease ${i*.2}s infinite` }} />
+            {[...Array(3)].map((_, i) => (
+              <div
+                key={i}
+                className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-lg h-80 relative"
+              >
+                <div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                  style={{
+                    animation: `shimmerSkeleton 1.6s ease ${i * 0.2}s infinite`,
+                  }}
+                />
                 <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-orange-300 dot-1" />
                   <div className="w-2.5 h-2.5 rounded-full bg-pink-300 dot-2" />
@@ -303,33 +478,62 @@ export const Blog: React.FC = () => {
               <Reveal key={post.id} type="flip" delay={index * 130}>
                 <div
                   className="blog-card group bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-lg cursor-pointer relative"
-                  style={{ transformStyle:"preserve-3d" }}
-                  onClick={() => { toast.success(`Opening "${post.title}"`); setSelectedPost(post); }}
+                  style={{ transformStyle: "preserve-3d" }}
+                  onClick={() => {
+                    toast.success(`Opening "${post.title}"`);
+                    setSelectedPost(post);
+                  }}
                 >
                   {/* Hover blob */}
-                  <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-orange-200 opacity-0 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none" style={{ animation:"morphBlob 5s ease infinite" }} />
+                  <div
+                    className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-orange-200 opacity-0 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none"
+                    style={{ animation: "morphBlob 5s ease infinite" }}
+                  />
 
                   <div className="relative h-52 overflow-hidden">
-                    <img src={post.image_url} alt={post.title} className="img-zoom w-full h-full object-cover" />
+                    <img
+                      src={post.image_url}
+                      alt={post.title}
+                      className="img-zoom w-full h-full object-cover"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div
                       className="absolute top-4 left-4 px-3 py-1 rounded-full text-white text-xs font-black"
-                      style={{ background:"linear-gradient(135deg,#f97316,#ec4899)", animation:`badgePop .6s cubic-bezier(.22,.68,0,1.4) ${index*130+300}ms both` }}
+                      style={{
+                        background: "linear-gradient(135deg,#f97316,#ec4899)",
+                        animation: `badgePop .6s cubic-bezier(.22,.68,0,1.4) ${index * 130 + 300}ms both`,
+                      }}
                     >
                       Article
                     </div>
                   </div>
 
-                  <div className="p-6" style={{ transform:"translateZ(12px)" }}>
+                  <div
+                    className="p-6"
+                    style={{ transform: "translateZ(12px)" }}
+                  >
                     <div className="flex items-center gap-4 mb-3 text-sm text-gray-500 dark:text-gray-400 font-medium">
-                      <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" />{new Date(post.created_at).toLocaleDateString()}</span>
-                      <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" />Preferable</span>
+                      <span className="flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {new Date(post.created_at).toLocaleDateString()}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5" />
+                        Preferable
+                      </span>
                     </div>
-                    <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2 line-clamp-2" style={{ fontFamily:"'Nunito', sans-serif" }}>{post.title}</h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-5 line-clamp-3 text-sm leading-relaxed">{post.excerpt}</p>
+                    <h3
+                      className="text-xl font-black text-gray-900 dark:text-white mb-2 line-clamp-2"
+                      style={{ fontFamily: "'Nunito', sans-serif" }}
+                    >
+                      {post.title}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-5 line-clamp-3 text-sm leading-relaxed">
+                      {post.excerpt}
+                    </p>
                     <div
                       className="inline-flex items-center gap-2 font-black text-sm transition-all duration-300 group-hover:gap-3"
-                      style={{ color:"#f97316" }}
+                      style={{ color: "#f97316" }}
                     >
                       <span>Read More</span>
                       <ArrowRight className="w-4 h-4" />

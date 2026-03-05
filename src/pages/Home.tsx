@@ -16,9 +16,6 @@ import { useCart } from "../contexts/CartContext";
 import { getAccessToken } from "../contexts/AuthContext";
 import { useProducts } from "../hooks/useProducts";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// EXTREME ANIMATION STYLES
-// ─────────────────────────────────────────────────────────────────────────────
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
 
@@ -31,7 +28,6 @@ const STYLES = `
 
   * { box-sizing: border-box; }
 
-  /* ── Keyframes ── */
   @keyframes heroTitle {
     0%   { opacity:0; transform: perspective(800px) rotateX(90deg) translateY(-60px); filter: blur(20px); }
     60%  { filter: blur(0); }
@@ -60,28 +56,9 @@ const STYLES = `
     0%,100% { box-shadow: 0 0 20px rgba(249,115,22,0.4), 0 0 60px rgba(249,115,22,0.1); }
     50%      { box-shadow: 0 0 40px rgba(249,115,22,0.8), 0 0 100px rgba(249,115,22,0.3), 0 0 160px rgba(249,115,22,0.1); }
   }
-  @keyframes textGlitch {
-    0%,90%,100% { transform: none; text-shadow: none; }
-    91%  { transform: skewX(-15deg) translateX(-3px); text-shadow: 3px 0 #ec4899, -3px 0 #f97316; }
-    93%  { transform: skewX(5deg)  translateX(2px);  text-shadow: -3px 0 #ec4899, 3px 0 #f97316; }
-    95%  { transform: skewX(-3deg) translateX(-1px); text-shadow: 2px 0 #fbbf24; }
-    97%  { transform: none; text-shadow: none; }
-  }
-  @keyframes rainbowShift {
-    0%   { filter: hue-rotate(0deg)   saturate(1.2); }
-    100% { filter: hue-rotate(360deg) saturate(1.2); }
-  }
   @keyframes shimmerBg {
     0%   { background-position: -400% 0; }
     100% { background-position:  400% 0; }
-  }
-  @keyframes particleFly {
-    0%   { transform: translate(0,0) scale(1); opacity: 1; }
-    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
-  }
-  @keyframes liquidWave {
-    0%,100% { d: path("M0,32 C80,60 160,0 240,32 C320,64 400,0 480,32 L480,80 L0,80 Z"); }
-    50%      { d: path("M0,48 C80,16 160,64 240,48 C320,32 400,64 480,48 L480,80 L0,80 Z"); }
   }
   @keyframes cardFlip {
     0%   { transform: perspective(1000px) rotateY(-8deg) rotateX(4deg) scale(0.92); opacity: 0; }
@@ -96,18 +73,6 @@ const STYLES = `
   @keyframes borderDance {
     0%,100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
     50%      { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
-  }
-  @keyframes textRevealMask {
-    from { clip-path: inset(0 100% 0 0); }
-    to   { clip-path: inset(0 0% 0 0); }
-  }
-  @keyframes countNum {
-    from { transform: translateY(100%); opacity:0; }
-    to   { transform: translateY(0);    opacity:1; }
-  }
-  @keyframes magneticPulse {
-    0%,100% { transform: scale(1); }
-    50%      { transform: scale(1.05); }
   }
   @keyframes trailFade {
     0%   { opacity: 0.8; transform: scale(1); }
@@ -148,30 +113,20 @@ const STYLES = `
     50%  { background-position: 100% 50%; }
     100% { background-position: 0%   50%; }
   }
-  @keyframes blobMorph2 {
-    0%,100% { border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%; transform: rotate(0deg); }
-    33%      { border-radius: 60% 40% 40% 60% / 60% 60% 40% 40%; transform: rotate(120deg); }
-    66%      { border-radius: 40% 60% 60% 40% / 60% 40% 60% 40%; transform: rotate(240deg); }
-  }
-  @keyframes neonFlicker {
-    0%,100%{ text-shadow: 0 0 10px #f97316, 0 0 20px #f97316, 0 0 40px #f97316; opacity:1; }
-    50%    { text-shadow: 0 0 5px #f97316; opacity:0.85; }
-    92%    { text-shadow: none; opacity:0.7; }
-    94%    { text-shadow: 0 0 10px #f97316, 0 0 30px #f97316; opacity:1; }
-  }
-  @keyframes rocketLaunch {
-    0%   { transform: translateY(0) rotate(-45deg) scale(1); }
-    40%  { transform: translateY(-6px) rotate(-45deg) scale(1.1); }
-    100% { transform: translateY(-24px) rotate(-60deg) scale(0.7); opacity:0; }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
   }
 
-  /* ── Global styles ── */
   .preferable-page {
     font-family: 'Plus Jakarta Sans', sans-serif;
     cursor: none;
   }
+  @media (max-width: 768px) {
+    .preferable-page { cursor: auto; }
+    .cursor-dot, .cursor-ring { display: none; }
+  }
 
-  /* Custom cursor */
   .cursor-dot {
     width: 12px; height: 12px;
     background: var(--peach);
@@ -204,21 +159,11 @@ const STYLES = `
     animation: trailFade 0.5s ease forwards;
   }
 
-  /* Magnetic button */
   .magnetic {
     transition: transform 0.3s cubic-bezier(.22,.68,0,1.4), box-shadow 0.3s ease;
     display: inline-flex; align-items: center; justify-content: center;
   }
 
-  /* 3D tilt card */
-  .tilt-card {
-    transform-style: preserve-3d;
-    transition: transform 0.1s ease;
-    will-change: transform;
-  }
-  .tilt-card-inner { transform: translateZ(20px); }
-
-  /* Blob background */
   .blob {
     position: absolute;
     border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
@@ -227,19 +172,11 @@ const STYLES = `
     opacity: 0.15;
   }
 
-  /* Hero text */
   .hero-title {
     font-family: 'Nunito', sans-serif;
     animation: heroTitle 1s cubic-bezier(.22,.68,0,1.2) 0.1s both;
   }
 
-  /* Glitch */
-  .glitch { animation: textGlitch 6s ease infinite; }
-
-  /* Rainbow */
-  .rainbow { animation: rainbowShift 4s linear infinite; }
-
-  /* Shimmer text */
   .ab-shimmer {
     background: linear-gradient(90deg,
       var(--peach) 0%, var(--gold) 20%, var(--pink) 40%,
@@ -252,33 +189,22 @@ const STYLES = `
     animation: shimmerBg 3s linear infinite;
   }
 
-  /* Reveal animations */
   .reveal-flip      { opacity:0; transform: perspective(1000px) rotateY(-8deg) rotateX(4deg) scale(0.92); transition: none; }
   .reveal-flip.on   { animation: cardFlip 0.7s cubic-bezier(.22,.68,0,1.2) both; }
   .reveal-up        { opacity:0; transform: translateY(40px); transition: opacity 0.6s ease, transform 0.6s cubic-bezier(.22,.68,0,1.2); }
   .reveal-up.on     { opacity:1; transform: translateY(0); }
 
-  /* Neon glow */
-  .neon-glow { animation: neonFlicker 3s ease-in-out infinite; }
-
-  /* Gradient animated bg */
   .grad-anim {
     background: linear-gradient(-45deg, #fee2e2, #fef3c7, #fce7f3, #fff7ed);
     background-size: 400% 400%;
     animation: gradientRotate 8s ease infinite;
   }
 
-  /* Wave text */
   .wave-char { display: inline-block; }
-
-  /* Particle container */
   .particle { position: absolute; pointer-events: none; border-radius: 50%; animation: explode 0.8s ease-out forwards; }
-
-  /* Section separator wave */
   .wave-sep { width:100%; overflow:hidden; line-height:0; }
   .wave-sep svg { display:block; }
 
-  /* CTA orbs */
   .cta-orb {
     position: absolute; border-radius: 50%;
     background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
@@ -286,34 +212,22 @@ const STYLES = `
     pointer-events: none;
   }
 
-  /* Scrolling ticker */
-  @keyframes ticker {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
-  }
   .ticker-track { animation: ticker 20s linear infinite; display: flex; width: max-content; }
   .ticker-wrap  { overflow: hidden; }
-
-  /* Badge entrance */
   .badge-pop { animation: badgePop 0.6s cubic-bezier(.22,.68,0,1.4) both; }
 
-  /* Screen flash overlay */
   .screen-flash {
     position: fixed; inset: 0; pointer-events:none; z-index: 9000;
     background: radial-gradient(circle at 50% 50%, rgba(249,115,22,0.15) 0%, transparent 70%);
     animation: screenFlash 8s ease infinite;
   }
+  @media (max-width: 768px) { .screen-flash { display: none; } }
 
-  /* Hover: icon dance */
   .group:hover .icon-dance { animation: iconDance 0.6s ease both; }
 
-  /* Stagger delays */
-  .sd-0  { animation-delay:   0ms; }
-  .sd-1  { animation-delay: 120ms; }
-  .sd-2  { animation-delay: 240ms; }
-  .sd-3  { animation-delay: 360ms; }
-  .sd-4  { animation-delay: 480ms; }
-  .sd-5  { animation-delay: 600ms; }
+  .sd-0 { animation-delay:   0ms; }
+  .sd-1 { animation-delay: 120ms; }
+  .sd-2 { animation-delay: 240ms; }
 `;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -351,7 +265,6 @@ function useStyles() {
   }, []);
 }
 
-// Custom cursor hook
 function useCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
@@ -359,19 +272,17 @@ function useCursor() {
   const ringPos = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
+    if (window.matchMedia("(max-width: 768px)").matches) return;
     const colors = ["#f97316", "#ec4899", "#fbbf24", "#84cc16", "#06b6d4"];
     let colorIdx = 0;
 
     const onMove = (e: MouseEvent) => {
       const { clientX: x, clientY: y } = e;
       mouseRef.current = { x, y };
-
       if (dotRef.current) {
         dotRef.current.style.left = x + "px";
         dotRef.current.style.top = y + "px";
       }
-
-      // Spawn trail
       const trail = document.createElement("div");
       trail.className = "cursor-trail";
       trail.style.cssText = `left:${x}px;top:${y}px;background:${colors[colorIdx++ % colors.length]};width:${4 + Math.random() * 6}px;height:${4 + Math.random() * 6}px;`;
@@ -418,7 +329,6 @@ function useCursor() {
       el.addEventListener("mouseenter", onEnter);
       el.addEventListener("mouseleave", onLeave);
     });
-
     document.addEventListener("mousemove", onMove);
     return () => {
       document.removeEventListener("mousemove", onMove);
@@ -429,10 +339,10 @@ function useCursor() {
   return { dotRef, ringRef };
 }
 
-// 3D tilt hook
 function useTilt(strength = 12) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    if (window.matchMedia("(max-width: 768px)").matches) return;
     const el = ref.current;
     if (!el) return;
     const onMove = (e: MouseEvent) => {
@@ -460,34 +370,6 @@ function useTilt(strength = 12) {
   return ref;
 }
 
-// Text scramble hook
-function useScramble(text: string, trigger: boolean) {
-  const [display, setDisplay] = useState(text);
-  const chars = "!<>-_\\/[]{}—=+*^?#abcdefghijklmnopqrstuvwxyz0123456789";
-  useEffect(() => {
-    if (!trigger) return;
-    let frame = 0;
-    const total = 20;
-    const interval = setInterval(() => {
-      setDisplay(
-        text
-          .split("")
-          .map((ch, i) => {
-            if (ch === " ") return " ";
-            if (frame / total > i / text.length) return ch;
-            return chars[Math.floor(Math.random() * chars.length)];
-          })
-          .join(""),
-      );
-      frame++;
-      if (frame > total) clearInterval(interval);
-    }, 40);
-    return () => clearInterval(interval);
-  }, [trigger, text]);
-  return display;
-}
-
-// Particle burst
 function spawnParticles(x: number, y: number, count = 16) {
   const colors = [
     "#f97316",
@@ -501,23 +383,14 @@ function spawnParticles(x: number, y: number, count = 16) {
     const p = document.createElement("div");
     const angle = (i / count) * Math.PI * 2;
     const dist = 60 + Math.random() * 80;
-    const tx = Math.cos(angle) * dist;
-    const ty = Math.sin(angle) * dist;
     const size = 6 + Math.random() * 10;
     p.className = "particle";
-    p.style.cssText = `
-      left:${x}px; top:${y}px;
-      width:${size}px; height:${size}px;
-      background:${colors[Math.floor(Math.random() * colors.length)]};
-      --ex:${tx}px; --ey:${ty}px;
-      animation-duration:${0.6 + Math.random() * 0.4}s;
-    `;
+    p.style.cssText = `left:${x}px;top:${y}px;width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random() * colors.length)]};--ex:${Math.cos(angle) * dist}px;--ey:${Math.sin(angle) * dist}px;animation-duration:${0.6 + Math.random() * 0.4}s;`;
     document.body.appendChild(p);
     setTimeout(() => p.remove(), 1000);
   }
 }
 
-// Magnetic button component
 const MagBtn: React.FC<{
   children: React.ReactNode;
   onClick?: () => void;
@@ -525,7 +398,12 @@ const MagBtn: React.FC<{
   style?: React.CSSProperties;
 }> = ({ children, onClick, className = "", style }) => {
   const ref = useRef<HTMLButtonElement>(null);
+  const isMobile =
+    typeof window !== "undefined" &&
+    window.matchMedia("(max-width: 768px)").matches;
+
   const handleMove = (e: React.MouseEvent) => {
+    if (isMobile) return;
     const el = ref.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
@@ -538,13 +416,13 @@ const MagBtn: React.FC<{
     if (!el) return;
     el.style.transform = "translate(0,0) scale(1)";
     el.style.transition = "transform 0.4s cubic-bezier(.22,.68,0,1.4)";
-    spawnParticles(e.clientX, e.clientY, 8);
+    if (!isMobile) spawnParticles(e.clientX, e.clientY, 8);
   };
   const handleEnter = () => {
     if (ref.current) ref.current.style.transition = "transform 0.1s ease";
   };
   const handleClick = (e: React.MouseEvent) => {
-    spawnParticles(e.clientX, e.clientY, 20);
+    if (!isMobile) spawnParticles(e.clientX, e.clientY, 20);
     onClick?.();
   };
   return (
@@ -562,29 +440,6 @@ const MagBtn: React.FC<{
   );
 };
 
-// Wave text
-const WaveText: React.FC<{ text: string; className?: string }> = ({
-  text,
-  className = "",
-}) => (
-  <span className={className}>
-    {text.split("").map((ch, i) => (
-      <span
-        key={i}
-        className="wave-char"
-        style={{
-          animationDelay: `${i * 80}ms`,
-          display: "inline-block",
-          animation: `waveText 1.5s ease-in-out ${i * 80}ms infinite`,
-        }}
-      >
-        {ch === " " ? "\u00A0" : ch}
-      </span>
-    ))}
-  </span>
-);
-
-// Animated section
 const Reveal: React.FC<{
   children: React.ReactNode;
   type?: "flip" | "up";
@@ -681,11 +536,8 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
 
   return (
     <div className="preferable-page min-h-screen relative overflow-x-hidden">
-      {/* Custom cursor */}
       <div ref={dotRef} className="cursor-dot" />
       <div ref={ringRef} className="cursor-ring" />
-
-      {/* Screen ambient flash */}
       <div className="screen-flash" />
 
       {/* ── HERO ── */}
@@ -693,26 +545,26 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
         id="home"
         className="relative min-h-screen flex items-center overflow-hidden grad-anim dark:bg-none dark:bg-gray-900"
       >
-        {/* Morphing blobs */}
+        {/* Blobs — hidden on mobile for perf */}
         <div
-          className="blob w-96 h-96 bg-orange-400 top-[-80px] left-[-60px]"
+          className="blob w-64 sm:w-96 h-64 sm:h-96 bg-orange-400 top-[-80px] left-[-60px] hidden sm:block"
           style={{ animationDuration: "9s" }}
         />
         <div
-          className="blob w-72 h-72 bg-pink-400 bottom-[-40px] right-[-30px]"
+          className="blob w-48 sm:w-72 h-48 sm:h-72 bg-pink-400 bottom-[-40px] right-[-30px] hidden sm:block"
           style={{ animationDuration: "11s", animationDelay: "3s" }}
         />
         <div
-          className="blob w-48 h-48 bg-yellow-400 top-1/3 left-1/3"
+          className="blob w-32 sm:w-48 h-32 sm:h-48 bg-yellow-400 top-1/3 left-1/3 hidden sm:block"
           style={{ animationDuration: "7s", animationDelay: "1s" }}
         />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 w-full">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* Copy */}
-            <div className="space-y-6">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 sm:pt-28 sm:pb-20 md:py-28 w-full">
+          <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
+            {/* ── Copy ── */}
+            <div className="space-y-5 sm:space-y-6 text-center md:text-left order-2 md:order-1">
               <div
-                className={`inline-block px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-700 ${heroReady ? "badge-pop opacity-100" : "opacity-0"}`}
+                className={`inline-block px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-700 ${heroReady ? "badge-pop opacity-100" : "opacity-0"}`}
                 style={{
                   background:
                     "linear-gradient(135deg, #f97316, #ec4899, #fbbf24)",
@@ -723,7 +575,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               </div>
 
               <h1
-                className="hero-title text-5xl md:text-6xl font-black leading-[1.05] text-gray-900 dark:text-white"
+                className="hero-title text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-black leading-[1.05] text-gray-900 dark:text-white"
                 style={{ fontFamily: "'Nunito', sans-serif" }}
               >
                 <span className="block ab-shimmer">Natural Care</span>
@@ -733,7 +585,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               </h1>
 
               <p
-                className={`text-xl text-gray-700 dark:text-gray-300 leading-relaxed reveal-up ${heroReady ? "on" : ""}`}
+                className={`text-base sm:text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed reveal-up ${heroReady ? "on" : ""}`}
                 style={{ transitionDelay: "400ms" }}
               >
                 PREFERABLE Kids &amp; Teens Natural &amp; Moisturizing Body Milk
@@ -741,12 +593,12 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               </p>
 
               <div
-                className={`flex flex-col sm:flex-row gap-4 reveal-up ${heroReady ? "on" : ""}`}
+                className={`flex flex-col sm:flex-row gap-3 sm:gap-4 reveal-up justify-center md:justify-start ${heroReady ? "on" : ""}`}
                 style={{ transitionDelay: "550ms" }}
               >
                 <MagBtn
                   onClick={() => onNavigate("products")}
-                  className="group px-8 py-4 text-white rounded-full font-bold text-lg shadow-2xl flex items-center gap-2"
+                  className="group px-6 sm:px-8 py-3 sm:py-4 text-white rounded-full font-bold text-base sm:text-lg shadow-2xl flex items-center justify-center gap-2 w-full sm:w-auto"
                   style={
                     {
                       background:
@@ -757,11 +609,11 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                   }
                 >
                   <span>Shop Now</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-2 transition-transform duration-300" />
                 </MagBtn>
                 <MagBtn
                   onClick={() => onNavigate("about")}
-                  className="px-8 py-4 bg-white dark:bg-gray-800 rounded-full font-bold text-lg border-2 hover:border-pink-400 transition-colors duration-300"
+                  className="px-6 sm:px-8 py-3 sm:py-4 bg-white dark:bg-gray-800 rounded-full font-bold text-base sm:text-lg border-2 hover:border-pink-400 transition-colors duration-300 w-full sm:w-auto"
                   style={{ color: "var(--peach)" }}
                 >
                   Learn More
@@ -769,7 +621,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               </div>
 
               <div
-                className={`flex items-center flex-wrap gap-6 pt-2 reveal-up ${heroReady ? "on" : ""}`}
+                className={`flex items-center flex-wrap gap-3 sm:gap-6 pt-2 reveal-up justify-center md:justify-start ${heroReady ? "on" : ""}`}
                 style={{ transitionDelay: "700ms" }}
               >
                 {[
@@ -780,13 +632,13 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                     label: "Dermatologist Tested",
                     color: "#ec4899",
                   },
-                ].map(({ Icon, label, color }, i) => (
+                ].map(({ Icon, label, color }) => (
                   <div
                     key={label}
                     className="group flex items-center gap-2 cursor-default select-none"
                   >
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center"
+                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                       style={{
                         background: `${color}22`,
                         transition: "transform 0.3s ease, background 0.3s ease",
@@ -804,9 +656,12 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                           "rotate(0) scale(1)";
                       }}
                     >
-                      <Icon className="w-5 h-5" style={{ color }} />
+                      <Icon
+                        className="w-4 h-4 sm:w-5 sm:h-5"
+                        style={{ color }}
+                      />
                     </div>
-                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <span className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
                       {label}
                     </span>
                   </div>
@@ -814,13 +669,13 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               </div>
             </div>
 
-            {/* Image with extreme effects */}
+            {/* ── Image ── */}
             <div
-              className={`relative reveal-up ${heroReady ? "on" : ""}`}
+              className={`relative reveal-up order-1 md:order-2 ${heroReady ? "on" : ""}`}
               style={{ transitionDelay: "200ms" }}
             >
-              {/* Orbit rings */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              {/* Orbit rings — hidden on small screens */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none hidden sm:flex">
                 <div
                   className="absolute w-[110%] h-[110%] rounded-full border-2 border-dashed border-orange-300/50 dark:border-orange-700/50"
                   style={{ animation: "orbitRing 12s linear infinite" }}
@@ -835,9 +690,8 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                 />
               </div>
 
-              {/* Pulsing glow behind card */}
               <div
-                className="absolute inset-8 rounded-3xl"
+                className="absolute inset-4 sm:inset-8 rounded-3xl"
                 style={{
                   background: "linear-gradient(135deg, #f97316, #ec4899)",
                   animation: "pulseGlow 3s ease-in-out infinite",
@@ -847,7 +701,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               />
 
               <div
-                className="relative z-10 bg-white dark:bg-gray-800 p-4 rounded-3xl shadow-2xl"
+                className="relative z-10 bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-3xl shadow-2xl mx-auto max-w-[280px] sm:max-w-sm md:max-w-none"
                 style={{ animation: "floatY 5s ease-in-out infinite" }}
               >
                 <img
@@ -857,15 +711,14 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                 />
               </div>
 
-              {/* Badge */}
               {badgePop && (
-                <div className="absolute -bottom-6 -right-6 z-20 bg-white dark:bg-gray-700 p-4 rounded-2xl shadow-2xl badge-pop">
+                <div className="absolute -bottom-3 sm:-bottom-6 right-0 sm:-right-6 z-20 bg-white dark:bg-gray-700 p-2.5 sm:p-4 rounded-2xl shadow-2xl badge-pop">
                   <div className="flex items-center gap-2">
-                    <div className="flex -space-x-2">
+                    <div className="flex -space-x-1.5 sm:-space-x-2">
                       {["#f97316", "#ec4899", "#fbbf24"].map((c, i) => (
                         <div
                           key={i}
-                          className="relative w-9 h-9 rounded-full border-2 border-white dark:border-gray-800 flex-shrink-0"
+                          className="w-7 h-7 sm:w-9 sm:h-9 rounded-full border-2 border-white dark:border-gray-800 flex-shrink-0"
                           style={{
                             background: c,
                             animation: `floatY ${3 + i * 0.5}s ease-in-out ${i * 0.4}s infinite`,
@@ -878,11 +731,11 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className="w-4 h-4 text-yellow-400 fill-yellow-400"
+                            className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-yellow-400"
                           />
                         ))}
                       </div>
-                      <p className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                      <p className="text-[10px] sm:text-xs font-bold text-gray-700 dark:text-gray-300 whitespace-nowrap">
                         1000+ Happy Parents
                       </p>
                     </div>
@@ -896,7 +749,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
 
       {/* ── TICKER ── */}
       <div
-        className="ticker-wrap py-3 overflow-hidden"
+        className="ticker-wrap py-2.5 sm:py-3 overflow-hidden"
         style={{
           background: "linear-gradient(90deg, #f97316, #ec4899)",
           borderTop: "2px solid #fbbf24",
@@ -907,7 +760,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           {[...tickerItems, ...tickerItems].map((item, i) => (
             <span
               key={i}
-              className="text-white font-black text-sm tracking-widest px-8 flex-shrink-0"
+              className="text-white font-black text-xs sm:text-sm tracking-widest px-4 sm:px-8 flex-shrink-0"
             >
               {item}
             </span>
@@ -918,40 +771,40 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
       {/* ── FEATURED PRODUCTS ── */}
       <section
         id="products"
-        className="py-24 relative overflow-hidden"
+        className="py-16 sm:py-20 md:py-24 relative overflow-hidden"
         style={{
           background:
             "linear-gradient(135deg, #fff7ed 0%, #fce7f3 50%, #fef9c3 100%)",
         }}
       >
         <div
-          className="blob w-64 h-64 bg-orange-300 top-0 right-0 opacity-20"
+          className="blob w-48 sm:w-64 h-48 sm:h-64 bg-orange-300 top-0 right-0 opacity-20 hidden sm:block"
           style={{ animationDuration: "10s" }}
         />
         <div
-          className="blob w-48 h-48 bg-pink-300 bottom-10 left-10 opacity-15"
+          className="blob w-36 sm:w-48 h-36 sm:h-48 bg-pink-300 bottom-10 left-10 opacity-15 hidden sm:block"
           style={{ animationDuration: "13s", animationDelay: "2s" }}
         />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Reveal className="text-center mb-16">
+          <Reveal className="text-center mb-10 sm:mb-16">
             <h2
-              className="text-5xl md:text-6xl font-black mb-4"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-3 sm:mb-4"
               style={{ fontFamily: "'Nunito', sans-serif" }}
             >
               <span className="ab-shimmer">Featured Products</span>
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 font-medium">
+            <p className="text-base sm:text-xl text-gray-600 dark:text-gray-300 font-medium">
               Our most loved products for your baby's care
             </p>
           </Reveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
             {loading
               ? [...Array(3)].map((_, i) => (
                   <div
                     key={i}
-                    className="h-80 rounded-3xl overflow-hidden relative bg-gray-200 dark:bg-gray-700"
+                    className="h-72 sm:h-80 rounded-3xl overflow-hidden relative bg-gray-200 dark:bg-gray-700"
                     style={{
                       animation: `morphCard 4s ease ${i * 0.5}s infinite`,
                     }}
@@ -974,20 +827,19 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                   <Reveal key={product.id} type="flip" delay={index * 150}>
                     <div
                       ref={tiltRefs[index]}
-                      className="group bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-xl"
+                      className="group bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-xl h-full"
                       style={{ transformStyle: "preserve-3d" }}
                     >
-                      <div className="relative h-64 overflow-hidden">
+                      <div className="relative h-52 sm:h-64 overflow-hidden">
                         <img
                           src={product.image}
                           alt={product.name}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                           style={{ filter: "saturate(1.1)" }}
                         />
-                        {/* Gradient overlay on hover */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         <div
-                          className="absolute top-4 right-4 text-white px-3 py-1 rounded-full text-sm font-black badge-pop"
+                          className="absolute top-3 sm:top-4 right-3 sm:right-4 text-white px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-black badge-pop"
                           style={{
                             background:
                               "linear-gradient(135deg, #f97316, #ec4899)",
@@ -999,21 +851,21 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                       </div>
 
                       <div
-                        className="p-6"
+                        className="p-4 sm:p-6"
                         style={{ transform: "translateZ(20px)" }}
                       >
                         <h3
-                          className="text-xl font-black text-gray-900 dark:text-white mb-2 group-hover:ab-shimmer transition-all"
+                          className="text-lg sm:text-xl font-black text-gray-900 dark:text-white mb-2"
                           style={{ fontFamily: "'Nunito', sans-serif" }}
                         >
                           {product.name}
                         </h3>
-                        <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2 text-sm">
+                        <p className="text-gray-600 dark:text-gray-300 mb-3 sm:mb-4 line-clamp-2 text-xs sm:text-sm">
                           {product.description}
                         </p>
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center justify-between mb-3 sm:mb-4">
                           <span
-                            className="text-2xl font-black"
+                            className="text-xl sm:text-2xl font-black"
                             style={{
                               fontFamily: "'Nunito', sans-serif",
                               background:
@@ -1028,7 +880,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                             {[...Array(5)].map((_, i) => (
                               <Star
                                 key={i}
-                                className="w-4 h-4 fill-yellow-400 text-yellow-400"
+                                className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400"
                               />
                             ))}
                           </div>
@@ -1036,19 +888,19 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                         <div className="flex gap-2">
                           <MagBtn
                             onClick={() => onNavigate("products")}
-                            className="flex-1 py-3 border-2 border-orange-400 text-orange-500 rounded-full font-bold text-sm hover:bg-orange-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                            className="flex-1 py-2.5 sm:py-3 border-2 border-orange-400 text-orange-500 rounded-full font-bold text-xs sm:text-sm hover:bg-orange-50 dark:hover:bg-gray-700 transition-colors duration-200"
                           >
                             View Details
                           </MagBtn>
                           <MagBtn
                             onClick={() => handleAddToCart(product)}
-                            className="flex-1 py-3 text-white rounded-full font-bold text-sm flex items-center justify-center gap-2 shadow-lg"
+                            className="flex-1 py-2.5 sm:py-3 text-white rounded-full font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 shadow-lg"
                             style={{
                               background:
                                 "linear-gradient(135deg, #f97316, #ec4899)",
                             }}
                           >
-                            <ShoppingCart className="w-4 h-4 icon-dance" />
+                            <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 icon-dance" />
                             Add to Cart
                           </MagBtn>
                         </div>
@@ -1089,21 +941,24 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
       </div>
 
       {/* ── BENEFITS ── */}
-      <section id="benefits" className="py-24 bg-white dark:bg-gray-900">
+      <section
+        id="benefits"
+        className="py-16 sm:py-20 md:py-24 bg-white dark:bg-gray-900"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Reveal className="text-center mb-16">
+          <Reveal className="text-center mb-10 sm:mb-16">
             <h2
-              className="text-5xl md:text-6xl font-black mb-4 text-gray-900 dark:text-white"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-3 sm:mb-4 text-gray-900 dark:text-white"
               style={{ fontFamily: "'Nunito', sans-serif" }}
             >
               Why Choose <span className="ab-shimmer">PREFERABLE?</span>
             </h2>
-            <p className="text-xl text-gray-500 dark:text-gray-400">
+            <p className="text-base sm:text-xl text-gray-500 dark:text-gray-400">
               Trusted by thousands of parents worldwide
             </p>
           </Reveal>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
             {[
               {
                 icon: Heart,
@@ -1126,7 +981,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             ].map((f, i) => (
               <Reveal key={i} delay={i * 140}>
                 <div
-                  className="group relative p-8 rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden"
+                  className="group relative p-6 sm:p-8 rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden h-full"
                   style={{
                     transition:
                       "transform 0.4s cubic-bezier(.22,.68,0,1.2), box-shadow 0.4s ease",
@@ -1142,7 +997,6 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                     (e.currentTarget as HTMLDivElement).style.boxShadow = "";
                   }}
                 >
-                  {/* Blob on hover */}
                   <div
                     className="absolute -top-12 -right-12 w-40 h-40 rounded-full opacity-0 group-hover:opacity-10 transition-opacity duration-500"
                     style={{
@@ -1150,20 +1004,22 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                       animation: "borderDance 4s ease infinite",
                     }}
                   />
-
                   <div
-                    className="icon-dance w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10"
+                    className="icon-dance w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-4 sm:mb-5 relative z-10"
                     style={{ background: `${f.color}22` }}
                   >
-                    <f.icon className="w-8 h-8" style={{ color: f.color }} />
+                    <f.icon
+                      className="w-6 h-6 sm:w-8 sm:h-8"
+                      style={{ color: f.color }}
+                    />
                   </div>
                   <h3
-                    className="text-xl font-black text-gray-900 dark:text-white mb-2 relative z-10"
+                    className="text-lg sm:text-xl font-black text-gray-900 dark:text-white mb-2 relative z-10"
                     style={{ fontFamily: "'Nunito', sans-serif" }}
                   >
                     {f.title}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-300 relative z-10">
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 relative z-10">
                     {f.desc}
                   </p>
                 </div>
@@ -1175,30 +1031,30 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
 
       {/* ── TESTIMONIALS ── */}
       <section
-        className="py-24 relative overflow-hidden"
+        className="py-16 sm:py-20 md:py-24 relative overflow-hidden"
         style={{ background: "linear-gradient(135deg, #fff7ed, #fce7f3)" }}
       >
         <div
-          className="blob w-80 h-80 bg-pink-300 top-0 left-0 opacity-20"
+          className="blob w-60 sm:w-80 h-60 sm:h-80 bg-pink-300 top-0 left-0 opacity-20 hidden sm:block"
           style={{ animationDuration: "9s" }}
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <Reveal className="text-center mb-16">
+          <Reveal className="text-center mb-10 sm:mb-16">
             <h2
-              className="text-5xl md:text-6xl font-black mb-4 text-gray-900"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-3 sm:mb-4 text-gray-900"
               style={{ fontFamily: "'Nunito', sans-serif" }}
             >
               <span className="ab-shimmer">What Parents Say</span>
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-base sm:text-xl text-gray-600">
               Real experiences from families who love PREFERABLE
             </p>
           </Reveal>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
             {[...Array(3)].map((_, idx) => (
               <Reveal key={idx} type="flip" delay={idx * 160}>
                 <div
-                  className="group bg-white rounded-3xl p-8 shadow-xl overflow-hidden relative"
+                  className="group bg-white rounded-3xl p-6 sm:p-8 shadow-xl overflow-hidden relative h-full"
                   style={{
                     transition:
                       "transform 0.4s cubic-bezier(.22,.68,0,1.2), box-shadow 0.4s ease",
@@ -1215,33 +1071,33 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                   }}
                 >
                   <div
-                    className="absolute top-0 right-0 w-32 h-32 rounded-full -mr-8 -mt-8 opacity-10"
+                    className="absolute top-0 right-0 w-28 sm:w-32 h-28 sm:h-32 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 opacity-10"
                     style={{
                       background: ["#f97316", "#ec4899", "#fbbf24"][idx],
                       animation: `morphBlob ${7 + idx}s ease infinite`,
                     }}
                   />
                   <Quote
-                    className="w-10 h-10 mb-4"
+                    className="w-8 h-8 sm:w-10 sm:h-10 mb-3 sm:mb-4"
                     style={{
                       color: ["#f97316", "#ec4899", "#fbbf24"][idx],
                       animation: `floatY ${3 + idx * 0.3}s ease-in-out infinite`,
                     }}
                   />
-                  <div className="flex mb-4">
+                  <div className="flex mb-3 sm:mb-4">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        className="w-5 h-5 fill-yellow-400 text-yellow-400"
+                        className="w-4 h-4 sm:w-5 sm:h-5 fill-yellow-400 text-yellow-400"
                       />
                     ))}
                   </div>
-                  <p className="text-gray-700 mb-6 leading-relaxed">
+                  <p className="text-sm sm:text-base text-gray-700 mb-4 sm:mb-6 leading-relaxed">
                     "Sample testimonial text for parent {idx + 1}."
                   </p>
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-12 h-12 rounded-full flex-shrink-0"
+                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0"
                       style={{
                         background: `linear-gradient(135deg, ${["#f97316", "#ec4899", "#fbbf24"][idx]}, ${["#ec4899", "#fbbf24", "#84cc16"][idx]})`,
                         animation: `floatY ${3.5 + idx * 0.4}s ease-in-out ${idx * 0.3}s infinite`,
@@ -1249,12 +1105,12 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                     />
                     <div>
                       <p
-                        className="font-black text-gray-900"
+                        className="font-black text-gray-900 text-sm sm:text-base"
                         style={{ fontFamily: "'Nunito', sans-serif" }}
                       >
                         Parent {idx + 1}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-xs sm:text-sm text-gray-500">
                         Mother/Father of {idx + 1}
                       </p>
                     </div>
@@ -1268,7 +1124,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
 
       {/* ── CTA ── */}
       <section
-        className="relative py-24 overflow-hidden"
+        className="relative py-16 sm:py-20 md:py-24 overflow-hidden"
         style={{
           background:
             "linear-gradient(135deg, #f97316 0%, #ec4899 50%, #f97316 100%)",
@@ -1276,7 +1132,6 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           animation: "shimmerBg 5s linear infinite",
         }}
       >
-        {/* Insane floating orbs */}
         {[
           { size: 200, top: "5%", left: "5%", dur: "7s", delay: "0s" },
           { size: 120, top: "70%", left: "80%", dur: "9s", delay: "1s" },
@@ -1286,7 +1141,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
         ].map((o, i) => (
           <div
             key={i}
-            className="cta-orb"
+            className="cta-orb hidden sm:block"
             style={
               {
                 width: o.size,
@@ -1302,7 +1157,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
 
         <Reveal className="relative z-10 max-w-4xl mx-auto px-4 text-center">
           <h2
-            className="text-5xl md:text-6xl font-black text-white mb-6"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 sm:mb-6"
             style={{
               fontFamily: "'Nunito', sans-serif",
               textShadow: "0 4px 24px rgba(0,0,0,0.2)",
@@ -1312,13 +1167,13 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             <br />
             <span>Natural Care</span>
           </h2>
-          <p className="text-xl text-white/90 mb-10">
+          <p className="text-base sm:text-xl text-white/90 mb-8 sm:mb-10">
             Join thousands of happy parents who trust PREFERABLE for their
             children's skincare
           </p>
           <MagBtn
             onClick={() => onNavigate("products")}
-            className="px-12 py-5 bg-white text-orange-600 rounded-full text-xl font-black shadow-2xl hover:shadow-orange-500/30 transition-shadow"
+            className="px-8 sm:px-12 py-4 sm:py-5 bg-white text-orange-600 rounded-full text-lg sm:text-xl font-black shadow-2xl hover:shadow-orange-500/30 transition-shadow"
           >
             Shop Our Products
           </MagBtn>
@@ -1326,34 +1181,35 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
       </section>
 
       {/* ── CONTACT ── */}
-      <section className="py-24 bg-white dark:bg-gray-900">
+      <section className="py-16 sm:py-20 md:py-24 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Reveal type="flip">
             <div
-              className="rounded-3xl p-12 text-center relative overflow-hidden"
+              className="rounded-3xl p-6 sm:p-8 md:p-12 text-center relative overflow-hidden"
               style={{
                 background:
                   "linear-gradient(135deg, #fff7ed, #fce7f3, #fef9c3)",
               }}
             >
               <div
-                className="blob w-64 h-64 bg-orange-400 opacity-10 top-0 left-0"
+                className="blob w-48 sm:w-64 h-48 sm:h-64 bg-orange-400 opacity-10 top-0 left-0 hidden sm:block"
                 style={{ animationDuration: "8s" }}
               />
               <div
-                className="blob w-48 h-48 bg-pink-400 opacity-10 bottom-0 right-0"
+                className="blob w-36 sm:w-48 h-36 sm:h-48 bg-pink-400 opacity-10 bottom-0 right-0 hidden sm:block"
                 style={{ animationDuration: "10s", animationDelay: "2s" }}
               />
 
               <h2
-                className="text-4xl md:text-5xl font-black mb-4 text-gray-900 relative z-10"
+                className="text-3xl sm:text-4xl md:text-5xl font-black mb-3 sm:mb-4 text-gray-900 relative z-10"
                 style={{ fontFamily: "'Nunito', sans-serif" }}
               >
                 <span className="ab-shimmer">Reach Out to Us</span>
               </h2>
-              <p className="text-xl mb-10 text-gray-700 relative z-10">
+              <p className="text-base sm:text-xl mb-6 sm:mb-10 text-gray-700 relative z-10">
                 Have questions? Message us directly on WhatsApp!
               </p>
+
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -1378,11 +1234,11 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                     "_blank",
                   );
                 }}
-                className="max-w-md mx-auto flex flex-col gap-4 relative z-10"
+                className="max-w-md mx-auto flex flex-col gap-3 sm:gap-4 relative z-10 w-full"
               >
                 {(["name", "email", "message"] as const).map((name, i) => {
                   const base =
-                    "px-6 py-4 rounded-2xl bg-white text-gray-900 w-full outline-none border-2 border-transparent font-medium";
+                    "px-4 sm:px-6 py-3 sm:py-4 rounded-2xl bg-white text-gray-900 w-full outline-none border-2 border-transparent font-medium text-sm sm:text-base";
                   const focusStyle =
                     "focus:border-orange-400 focus:shadow-[0_0_0_4px_rgba(249,115,22,0.15)] focus:scale-[1.02]";
                   const transStyle = "transition-all duration-300";
@@ -1413,7 +1269,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                   );
                 })}
                 <MagBtn
-                  className="px-8 py-4 text-white rounded-full font-black text-lg shadow-xl"
+                  className="px-6 sm:px-8 py-3 sm:py-4 text-white rounded-full font-black text-base sm:text-lg shadow-xl"
                   style={{
                     background: "linear-gradient(135deg, #f97316, #ec4899)",
                   }}

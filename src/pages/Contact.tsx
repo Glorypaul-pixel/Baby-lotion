@@ -96,23 +96,6 @@ const Reveal: React.FC<{
   );
 };
 
-const WaveText: React.FC<{ text: string; className?: string }> = ({
-  text,
-  className = "",
-}) => (
-  <span className={className}>
-    {text.split("").map((ch, i) => (
-      <span
-        key={i}
-        className="wave-char"
-        style={{ animation: `waveText 1.6s ease-in-out ${i * 75}ms infinite` }}
-      >
-        {ch === " " ? "\u00A0" : ch}
-      </span>
-    ))}
-  </span>
-);
-
 type ContactForm = {
   name: string;
   email: string;

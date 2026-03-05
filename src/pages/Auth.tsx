@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Baby, ArrowLeft, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
@@ -169,19 +169,6 @@ function useAuthStyles() {
 }
 
 // ── Wave text ─────────────────────────────────────────────────────────────────
-const WaveText: React.FC<{ text: string; className?: string }> = ({ text, className = "" }) => (
-  <span className={className}>
-    {text.split("").map((ch, i) => (
-      <span
-        key={i}
-        className="wave-char"
-        style={{ animation: `waveText 1.6s ease-in-out ${i * 80}ms infinite` }}
-      >
-        {ch === " " ? "\u00A0" : ch}
-      </span>
-    ))}
-  </span>
-);
 
 // ── Magnetic button ───────────────────────────────────────────────────────────
 function spawnParticles(x: number, y: number, count = 12) {
