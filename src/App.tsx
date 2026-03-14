@@ -5,7 +5,7 @@ import { CartProvider, useCart } from "./contexts/CartContext";
 
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
-import { Loader } from "./components/Loader"; // ✅ use the real Loader component
+import { Loader } from "./components/Loader";
 
 import { Home } from "./pages/Home";
 import { Products } from "./pages/Products";
@@ -24,14 +24,10 @@ import { AdminDashboard } from "./pages/admin/Dashboard";
 
 /* App Content */
 const AppContent = () => {
-  const { user, loading } = useAuth(); // ✅ called inside a component — valid
+  const { user, loading } = useAuth();
   const { fetchCart, clearCart } = useCart();
   const [currentPage, setCurrentPage] = useState("home");
 
-  // ✅ Sync cart with auth state:
-  // - skip while AuthContext is still restoring session (loading)
-  // - fetch cart when user is present (login or session restore)
-  // - clear cart when user is null (logout)
   React.useEffect(() => {
     if (loading) return;
     if (user) {
@@ -43,10 +39,12 @@ const AppContent = () => {
 
   if (loading) return <Loader fullScreen message="Starting up" />;
 
+  const isAdmin = currentPage === "admin";
+
   const renderPage = () => {
-    if (currentPage === "admin") {
+    if (isAdmin) {
       if (!user) return <Auth onNavigate={setCurrentPage} />;
-      return <AdminDashboard />;
+      return <AdminDashboard onNavigate={setCurrentPage} />;
     }
 
     switch (currentPage) {
@@ -95,9 +93,11 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
-      <Navbar onNavigate={setCurrentPage} currentPage={currentPage} />
+      {!isAdmin && (
+        <Navbar onNavigate={setCurrentPage} currentPage={currentPage} />
+      )}
       <main>{renderPage()}</main>
-      <Footer onNavigate={setCurrentPage} />
+      {!isAdmin && <Footer onNavigate={setCurrentPage} />}
     </div>
   );
 };

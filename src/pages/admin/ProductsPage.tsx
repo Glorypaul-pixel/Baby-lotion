@@ -81,7 +81,7 @@ export const ProductsPage: React.FC = () => {
             type="number"
             placeholder="Quantity"
             value={editForm.quantity}
-            onChange={(e) =>
+            onChange={(e) => 
               setEditForm({ ...editForm, quantity: Number(e.target.value) })
             }
             className="border px-2 py-1 rounded w-24"

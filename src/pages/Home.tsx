@@ -535,7 +535,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
   ];
 
   return (
-    <div className="preferable-page min-h-screen relative overflow-x-hidden">
+    <div className="preferable-page min-h-screen relative overflow-x-hidden ">
       <div ref={dotRef} className="cursor-dot" />
       <div ref={ringRef} className="cursor-ring" />
       <div className="screen-flash" />
